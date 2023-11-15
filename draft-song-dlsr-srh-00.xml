@@ -69,7 +69,7 @@
 
   <abstract>
     <t>We propose to make network domains as an explicit entity for packet forwarding, in order to better support 
-	   end-to-end quality of service, network security, domain-level policy, and cross-domain traffic engineering. 
+	   end-to-end quality of service, traffic privacy and security, domain-level policy, and cross-domain traffic engineering. 
        In the context of IPv6, the Domain-Level Segment Routing (DLSR) can be considered as a special case of SRv6, in which
 	   each domain is virtualized as a single node and encoded as a Domain SID (DSID).
        SRH is used to support DLSR, and DSIDs can be mixed with any other types of SIDs in an SRH.    
@@ -88,21 +88,21 @@
     <section anchor="Introduction" numbered="true" toc="default">
       <name>Introduction</name>
       <t>
-	     The Internet is a network of networks, in which each basic network, also known as an Autonomous Domain (AS), is independently operated by an Internet Service Provider (ISP). Although used by the inter-domain routing protocol Border Gateway Protocol (BGP), ASes are invisible in the forwarding plane, to both end-hosts and routers. At each router in the Internet, packet forwarding is based on a Forwarding Information Base (FIB), which only provides the next hop (i.e., a next immediate router towards the destination) to forward the packet, without showing which domain the packet is from, in, and to. By hiding the domain information and blurring their boundary, the flat forwarding architecture is simple and uniform, but it also misses some important opportunities to achieve certain high-level goals for efficient forwarding.        
+	     The Internet is a network of networks, in which each basic network, known as an Autonomous Domain (AS), is independently operated by an Internet Service Provider (ISP). Although used by the inter-domain routing protocol Border Gateway Protocol (BGP), ASes are invisible in the forwarding plane, to both end-hosts and routers. At each router in the Internet, packet forwarding is based on a Forwarding Information Base (FIB), which only provides the next hop (i.e., a next immediate router towards the destination) information, without showing which domain the packet is from, in, and to. Such a flat forwarding architecture misses some opportunities to achieve certain high-level goals of forwarding.        
 	  </t>
 	  
 	  <t>
-		 The AS or domain (we will use domain interchangeably with the term AS hereafter) sets a clear boundary for responsibility. The service provider of a domain can make decision on peering agreement and various routing policies, and take charge of intra-domain routing and forwarding schemes. In the seven layers of networking model, domain can be naturally considered as a sub-layer located between Layer 3 (i.e., network layer) and Layer 4 (i.e., transport layer). In the past few years, it has been suggested to introduce the Layer 3.5 (L3.5) into the protocol stack as a means to de-ossify the Internet architecture by removing the IP protocol as the thin waist at L3. However, even without the ambitious goal, the introduction of the Layer 3.5 is still beneficial in the context of the IP networks. For example, the hierarchical layer separation may simplify the routing and forwarding; at the domain level, fewer entities need to be dealt with on a forwarding path and each entity happens to correspond to a single accountable operator; the new overlay can hide the underlay details so the intra-domain routing and forwarding can be kept as internal procedure for good reasons.    
+		 The AS or domain (we will use domain interchangeably with the term AS hereafter) sets a clear boundary for responsibility. The service provider of a domain can make decision on peering agreements and various routing policies, and take charge of intra-domain routing and forwarding schemes. In the seven layers of networking model, domain can be naturally considered as a sub-layer located between Layer 3 (i.e., network layer) and Layer 4 (i.e., transport layer). In the past few years, it has been suggested to introduce the Layer 3.5 (L3.5) into the protocol stack as a means to de-ossify the Internet architecture by removing the IP protocol as the thin waist at L3. However, even without the ambitious goal, the introduction of the Layer 3.5 is still beneficial in the context of the IP networks. For example, the hierarchical layer separation may simplify the routing and forwarding; at the domain level, fewer entities need to be dealt with on a forwarding path and each entity happens to correspond to a single accountable operator; the new overlay can hide the underlay details so the intra-domain routing and forwarding can be kept as internal procedure for good reasons.    
 	  </t>
       
 	  <t>
 	     The IP network is migrating to IPv6. IPv6 was designed to be extensible with the Extension Header (EH) mechanism <xref target="RFC8200"/>.
-         EH is conveniently located between the base IPv6 header (L3) and the transport protocol header (L4), suitable for a L3.5 header. A Routing Header (RH) is specified as an EH type. SRv6 <xref target="RFC8754"/> has taken advantage of it to support a flavor of node-level source routing on IPv6 data plane using an RH type named SRH. With great extensibility and programmability, SRv6 has shown potential in supporting new services, making the network intelligent, and simplifying the network protocols. It is crucial to take advantage of its momentum and exploit its extensibility to make it even more powerful. 
+         EH is conveniently located between the base IPv6 header (L3) and the transport protocol header (L4), suitable for a L3.5 header. A Routing Header (RH) is specified as an EH type. SRv6 <xref target="RFC8754"/> has taken advantage of it to support a flavor of node-level source routing on IPv6 data plane using an RH type named SRH. With great extensibility and programmability, SRv6 has shown potential in supporting new services, making the network intelligent and simplifying the network protocols. It is crucial to take advantage of its momentum and exploit its extensibility to make it even more powerful. 
 	  </t>
 	  
 	  <t>With the domain as the explicit L3.5 entity, we can take a simplified view of the Internet by considering each domain as 
-	     a virtual router (i.e., each domain is virtualized as a single node). The physical Domain Border Routers (DBRs) are considered the virtual router interfaces, and all the other intra-domain routers of a domain resemble the switch fabric of the corresponding virtual router. 
-		 In this model, each virtual router can be identified by the domain ID (i.e., the AS number). A packet destined to a virtual router will be processed by an ingress DBR of the corresponding domain where local intra-domain policies can be applied. Each virtual router's performance is individually monitored and measured. Such an abstraction allows us to easily reuse the existing OAM protocols and tools, yet at the domain level instead of the physical router level. 
+	     a virtual router (i.e., each domain is virtualized as a single node). The physical Domain Border Routers (DBRs) are considered as the virtual router interfaces, and all the other intra-domain routers of a domain resemble the switch fabric of the corresponding virtual router. 
+		 In this model, each virtual router can be identified by a domain ID (i.e., the AS number). A packet destined to a virtual router will be processed by an ingress DBR of the corresponding domain where local intra-domain policies can be applied (note that the local policy can be opaque to the controller outside of the domain). Each virtual router's performance is individually monitored and measured. Such an abstraction allows us to easily reuse the existing OAM protocols and tools, yet at the domain level instead of the physical router level. 
 	  </t>
 	  
 	  <t>Under such a model, it is easy to fit the domain-level routing and forwarding in the framework of SRv6 by deeming a domain as a segment endpoint. From the SRv6's perspective, a domain-level segment has no difference from a physical node-level segment.
@@ -159,6 +159,10 @@
 	  The locator part of the DSID is considered as an anycast address of the domain which is advertised externally by all the DBRs of the domain.
 	  Therefore, a packet destined to a domain-level segment (i.e., the destination IP address is a DSID) can reach the domain through one of its DBRs according to the routing computation result. 
 	  </t>
+	  
+	  <t>
+	  The remaining part of the DSID can be used to encode the QoS requirements or for other uses. The encoding of this part is out of the scope of this document.
+	  </t>
       
 	  </section>
 	  
@@ -169,18 +173,17 @@
 	     The SRH format for DLSR is identical to the standard format as specified in <xref target="RFC8754"/>.
 		 The segment list can have mixed DSIDs and other types of SIDs in arbitrary number and order.  
 		 An SRH can specify a pure domain-level path in the sense of either strict or loose source routing. 
-		 It is also possible to specify a path mixed with domains and physical nodes. 
-		 However, since a DSID represents a domain, a few rules need to be obeyed when specifying a path to guarantee the correct semantics. 
+		 It is also possible to specify a path mixed with domains and physical nodes for extended flexibility. 
+		 However, since a DSID represents a domain, a few rules need to be observed when specifying a path to guarantee the correct semantics. 
 	  </t>
 	  
 	  <t><list style="symbols">
-	  <t>The original source and the final destination of a packet should be a physical node. The final destination of the packet is the last SID in the segment list. </t>
+	  <t>The DSID of a domain X is not routable within X. Therefore, the next segment endpoint of a physical node in X MUST not be the DSID of X. </t>
 
-      <t>The next segment endpoint of a domain-level segment endpoint should usually be located outside of the domain, because the domain is considered as a single node.</t>	  
+      <t>The next segment endpoint of a domain-level segment endpoint should usually be located outside of the domain, because the entire domain is considered as a single endpoint.</t>	  
 	  
 	  <t>An exception to the above rule is that: the last segment endpoint (i.e., the final destination) can be within a domain-level segment endpoint. This is usually used for strict DLSR where the complete domain-level path is specified.</t>
 	  
-	  <t>For the same reason, the source node can be within a domain-level segment endpoint (i.e., the first domain on the path).</t> 
 	  </list></t>
 	  
 	  </section>
@@ -189,7 +192,7 @@
 	  <name>DLSR Forwarding Examples</name>
 		
 	  
-	  <t>The path head end inserts the SRH to the packet. In the case of strict path DLSR, assume the domain-level path length is N (include the source domain and the destination domain), we set SL = N-1 and Last_Entry = N. We use an example shown in <xref target="fig:net" /> to describe the forwarding process for the strict path DLSR.
+	  <t>The path head end inserts the SRH to the packet. In the case of strict path DLSR, assume the domain-level path length is N (include the source domain and the destination domain), we set SL = N-1. We use an example shown in <xref target="fig:net" /> to describe the forwarding process for the strict path DLSR.
 	  </t>
 
 	  <figure anchor="fig:net">
@@ -220,15 +223,15 @@
       </figure>
 		
 	  <t>Assume the source node Src in AS0 would send a packet to the destination node Dst in AS3 and it acquires 
-	  a strict DLSR path &lt;AS0, AS1, AS2, AS5&gt;. 
-	  The packet at Src is formatted as (Src, AS1)(Dst, AS5, AS2, AS1, AS0; SL=3,LE=4). 
-	  The packet is forwarded to DBR 'a'. At 'a', the packet is updated to (Src, AS2)(Dst, AS5, AS2, AS1, AS0; SL=2), 
-	  and forwarded to 'd'.  At 'd', the packet is updated to (Src, AS5)(Dst, AS5, AS2, AS1, AS0; SL=1) 
-	  and forwarded to 'y'. At 'y', the packet is updated to (Src, Dst)(Dst, AS5, AS2, AS1, AS0; SL=0) 
+	  a strict DLSR path &lt;AS1, AS2, AS5&gt;. 
+	  The packet at Src is formatted as (Src, AS1)(Dst, AS5, AS2, AS1; SL=3). 
+	  The packet is forwarded to DBR 'a'. At 'a', the packet is updated to (Src, AS2)(Dst, AS5, AS2, AS1; SL=2), 
+	  and forwarded to 'd'.  At 'd', the packet is updated to (Src, AS5)(Dst, AS5, AS2, AS1; SL=1) 
+	  and forwarded to 'y'. At 'y', the packet is updated to (Src, Dst)(Dst, AS5, AS2, AS1; SL=0) 
 	  and forwarded to Dst. 
 	  </t>
 
-	  <t>The ingress DBR of a domain-level segment endpoint may process the optional TLVs carried in the SRH, as well as the functions and parameters carried in the DSID.</t> 
+	  <t>The ingress DBR of a domain-level segment endpoint also processes the functions and parameters carried in the DSID, as well as the optional TLVs carried in the SRH. </t> 
 	  
 	  <t>In more general cases, domain-level segments can be mixed with node-level segments for more flexible forwarding. For example, in <xref target="fig:net" />, if a path &lt;AS3, e&gt; is configured for a packet from Src to Dst, the packet at Src is formatted as (Src, AS3)(Dst, e, AS3; SL=2) and forwarded to 'f'.  At 'f'. the packet is updated to (Src, e)(Dst, e, AS3; SL=1) and forwarded to 'e'. At 'e', the packet is updated to (Src, Dst)(Dst, e, AS3; SL=0) and forwarded to Dst. Note that if the Penultimate Hop Popping (PHP) behavior is preferred, Node 'e' can remove the SRH before forwarding the packet to Dst. </t>
 	  
@@ -247,6 +250,8 @@
 	    <name>Domain-level Segment vs. Node-level Segment</name>
         <t>To some extent, a domain-level segment is equivalent to two node-level segments (one for the domain ingress DBR and the other for the domain egress DBR). However, each domain only needs a globally unique SID to represent but it may have many ingress and egress DBRs. Using a domain-level segment is more compact than using two node-level segments, and support multihoming without exposing the domain topology and configuration. Moreover, a domain-level segment unambiguously defines the domain boundary (the node-level segment lacks such a feature) so the use cases discussed in <xref target="usecase" /> can be easily supported.</t>
    		
+		<t>Although the DSID can also be used as a binding SID to bind some local policy as configured by the global controller, in practice, the intra-domain forwarding scheme and policy are preferred to be kept private and controlled locally. The domain-level segment makes such provision straightforward.</t>
+		
      </section>
 	 
    </section>
@@ -257,16 +262,15 @@
 	  
 	  <section anchor="qos" numbered="true" toc="default">
 	    <name>End-to-End Cross-Domain QoS</name>
-		<t>Cross-domain QoS is a long-standing problem. It needs a solution for the emerging Internet-scale applications such as metaverse, 3D live events, and remote interactive operations. In the current Internet, since the accountable entity such as domain is invisible at data plane, it is difficult to assign the responsibilities and attribute the service results. By supporting domain-level routing and forwarding, we can foster a business model to enable Internet-scale end-to-end QoS with the right level of manageable entity. The limited number of "hops" corresponds to the service providers who have vested interests to support the value-added services and full control of the means to achieve the QoS goal. The domain level routing and forwarding also decouple the intra-domain and inter-domain, allowing each domain operator to independently innovate on intra-domain traffic engineering and forwarding optimizations. The explicit domain boundary also allows the existing OAM standards and tools to be applied at the domain level by considering each domain as a node, making domain-level SLA auditable.  
+		<t>Cross-domain QoS is a long-standing problem. It needs a solution for the emerging Internet-scale applications such as metaverse, 3D live events, and remote interactive operations. In the current Internet, since the accountable entity such as domain is invisible at data plane, it is difficult to assign the responsibilities and attribute the service results. By supporting domain-level routing and forwarding, a business model can be fostered to enable Internet-scale end-to-end QoS with the right level of manageable entity. The limited number of "hops" corresponds to the service providers who have vested interests to support the value-added services and full control of the means to achieve the QoS goal. The domain level routing and forwarding also decouple the intra-domain and inter-domain, allowing each domain operator to independently innovate on intra-domain traffic engineering and forwarding optimizations. The explicit domain boundary also allows the existing OAM standards and tools to be applied at the domain level by considering each domain as a node, making domain-level SLA auditable.  
 		</t>
 		
       </section>
 	  
 	  
 	  <section anchor="security" numbered="true" toc="default">
-		<name>Security</name>
-		<t>By specifying a domain-level path, one can avoid certain domains or include certain domains for security reason.
-		   One can also guide traffic to certain domains for special treatment.</t>
+		<name>Traffic Security and Privacy</name>
+		<t>For various business or legal reasons, certain customer traffic must be retained within specific domains. On the other hand, due to disaster, outrage, and other political reasons, certain customer traffic must avoid specific domains. By specifying a domain-level path, one can avoid or include domains for any security and privacy reasons. One can also guide traffic to certain domains for special treatments such as security screening and lawful interception.</t>
 	  </section>
 	  
 	  
@@ -282,6 +286,22 @@
 	    <name>Domain Level Traffic Engineering</name>
 	    <t>One can provision multiple domain-level paths with the same of different service level. Path choosing or load balancing can be applied on these paths to achieve the idea performance.</t>
 	  </section>
+	  
+	  <section anchor="sfc" numbered="true" toc="default">
+	    <name>Service Function Chaining (SFC)</name>
+	    <t>Domain level source routing allows service providers to collaborate on providing distributed network services. SFC is a general technique to initiate an ordered set of service functions (e.g., firewall, load balancing, WAN optimization, NAT, and encryption) in network and steer the user traffic through it. Traditionally it can only be used by a single service provider. With DLSR, it is easier to negotiate a plan to allocate different network functions in different domains. The service providers are compensated by the nature of the functions and the contribution of each participating domain. The SFC descriptor (e.g., <xref target="RFC8300">NSH</xref>) can be carried as a SRH option.</t>
+	  </section>
+	  
+	  <section anchor="pv" numbered="true" toc="default">
+	    <name>Path Validation</name>
+	    <t>DLSR provides a natural way to support path validation at the domain level. The path information is kept in the SRH and can be verified at each segment endpoint. Various verification algorithms and protocols can be used (e.g., <xref target="RFC9197">IOAM POT</xref>).</t>
+	  </section>
+	  
+	  <section anchor="hs" numbered="true" toc="default">
+	    <name>Hierarchical Segment Routing</name>
+		<t>When the SR domain covers multiple ASes, DLSR can be used to effectively reduce the packet overhead and protect the privacy. In this case, the packet is forwarded at the domain level. Each DSID is configured as a binding SID, so at each domain border, a local SR policy is applied to tunnel through the domain. On the data plane, any domain do not know the policy of the other domains. </t>
+	  </section>
+	  
 	</section>
   
   
@@ -303,7 +323,7 @@
 	
 	<section anchor="Acknowledgments" numbered="true" toc="default">
       <name>Acknowledgments</name>
-	  <t>The authors would like to thank Tony Li and Toerless Eckert for their comments and suggestions.</t>
+	  <t>The authors would like to thank Tony Li, Toerless Eckert, Cheng Li, and Nan Geng for their comments and suggestions.</t>
     </section>
 	
 	
@@ -315,11 +335,13 @@
 	    <?rfc include='reference.RFC.2119'?> 	
 		<?rfc include='reference.RFC.8200'?>
         <?rfc include='reference.RFC.8754'?> 
-		<?rfc include='reference.I-D.ietf-spring-srv6-srh-compression'?>	
+		
       </references>
 	  
       <references title="Informative References">
-	    
+	    <?rfc include='reference.RFC.8300'?>
+	    <?rfc include='reference.I-D.ietf-spring-srv6-srh-compression'?>	
+		<?rfc include='reference.RFC.9197'?>
       </references>
     
   </back>
