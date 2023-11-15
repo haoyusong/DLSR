@@ -1,0 +1,560 @@
+
+
+
+
+Internet Engineering Task Force                                  H. Song
+Internet-Draft                                                 A. Retana
+Intended status: Standards Track                  Futurewei Technologies
+Expires: 18 May 2024                                    15 November 2023
+
+
+              IPv6 Domain Level Segment Routing using SRH
+                         draft-song-dlsr-srh-00
+
+Abstract
+
+   We propose to make network domains as an explicit entity for packet
+   forwarding, in order to better support end-to-end quality of service,
+   traffic privacy and security, domain-level policy, and cross-domain
+   traffic engineering.  In the context of IPv6, the Domain-Level
+   Segment Routing (DLSR) can be considered as a special case of SRv6,
+   in which each domain is virtualized as a single node and encoded as a
+   Domain SID (DSID).  SRH is used to support DLSR, and DSIDs can be
+   mixed with any other types of SIDs in an SRH.  DLSR allows each
+   domain to hide its intra-domain routing/forwarding details and be
+   managed and monitored as a whole.  The scheme is compatible with IPv6
+   and SRv6 architecture.
+
+Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in RFC 2119 [RFC2119].
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 18 May 2024.
+
+
+
+
+
+
+Song & Retana              Expires 18 May 2024                  [Page 1]
+
+Internet-Draft                  DLSR SRH                   November 2023
+
+
+Copyright Notice
+
+   Copyright (c) 2023 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+     1.1.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   4
+   2.  Domain Level Segment Routing  . . . . . . . . . . . . . . . .   4
+     2.1.  Domain SID  . . . . . . . . . . . . . . . . . . . . . . .   4
+     2.2.  SRH for DLSR  . . . . . . . . . . . . . . . . . . . . . .   5
+     2.3.  DLSR Forwarding Examples  . . . . . . . . . . . . . . . .   5
+     2.4.  DLSR SRH Compression  . . . . . . . . . . . . . . . . . .   7
+     2.5.  Domain-level Segment vs. Node-level Segment . . . . . . .   7
+   3.  Use Cases . . . . . . . . . . . . . . . . . . . . . . . . . .   7
+     3.1.  End-to-End Cross-Domain QoS . . . . . . . . . . . . . . .   7
+     3.2.  Traffic Security and Privacy  . . . . . . . . . . . . . .   8
+     3.3.  Domain Level Routing Policy . . . . . . . . . . . . . . .   8
+     3.4.  Domain Level Traffic Engineering  . . . . . . . . . . . .   8
+     3.5.  Service Function Chaining (SFC) . . . . . . . . . . . . .   8
+     3.6.  Path Validation . . . . . . . . . . . . . . . . . . . . .   8
+     3.7.  Hierarchical Segment Routing  . . . . . . . . . . . . . .   9
+   4.  Security Considerations . . . . . . . . . . . . . . . . . . .   9
+   5.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   9
+   6.  Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .   9
+   7.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   9
+     7.1.  Normative References  . . . . . . . . . . . . . . . . . .   9
+     7.2.  Informative References  . . . . . . . . . . . . . . . . .  10
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  10
+
+1.  Introduction
+
+   The Internet is a network of networks, in which each basic network,
+   known as an Autonomous Domain (AS), is independently operated by an
+   Internet Service Provider (ISP).  Although used by the inter-domain
+   routing protocol Border Gateway Protocol (BGP), ASes are invisible in
+   the forwarding plane, to both end-hosts and routers.  At each router
+   in the Internet, packet forwarding is based on a Forwarding
+
+
+
+Song & Retana              Expires 18 May 2024                  [Page 2]
+
+Internet-Draft                  DLSR SRH                   November 2023
+
+
+   Information Base (FIB), which only provides the next hop (i.e., a
+   next immediate router towards the destination) information, without
+   showing which domain the packet is from, in, and to.  Such a flat
+   forwarding architecture misses some opportunities to achieve certain
+   high-level goals of forwarding.
+
+   The AS or domain (we will use domain interchangeably with the term AS
+   hereafter) sets a clear boundary for responsibility.  The service
+   provider of a domain can make decision on peering agreements and
+   various routing policies, and take charge of intra-domain routing and
+   forwarding schemes.  In the seven layers of networking model, domain
+   can be naturally considered as a sub-layer located between Layer 3
+   (i.e., network layer) and Layer 4 (i.e., transport layer).  In the
+   past few years, it has been suggested to introduce the Layer 3.5
+   (L3.5) into the protocol stack as a means to de-ossify the Internet
+   architecture by removing the IP protocol as the thin waist at L3.
+   However, even without the ambitious goal, the introduction of the
+   Layer 3.5 is still beneficial in the context of the IP networks.  For
+   example, the hierarchical layer separation may simplify the routing
+   and forwarding; at the domain level, fewer entities need to be dealt
+   with on a forwarding path and each entity happens to correspond to a
+   single accountable operator; the new overlay can hide the underlay
+   details so the intra-domain routing and forwarding can be kept as
+   internal procedure for good reasons.
+
+   The IP network is migrating to IPv6.  IPv6 was designed to be
+   extensible with the Extension Header (EH) mechanism [RFC8200].  EH is
+   conveniently located between the base IPv6 header (L3) and the
+   transport protocol header (L4), suitable for a L3.5 header.  A
+   Routing Header (RH) is specified as an EH type.  SRv6 [RFC8754] has
+   taken advantage of it to support a flavor of node-level source
+   routing on IPv6 data plane using an RH type named SRH.  With great
+   extensibility and programmability, SRv6 has shown potential in
+   supporting new services, making the network intelligent and
+   simplifying the network protocols.  It is crucial to take advantage
+   of its momentum and exploit its extensibility to make it even more
+   powerful.
+
+   With the domain as the explicit L3.5 entity, we can take a simplified
+   view of the Internet by considering each domain as a virtual router
+   (i.e., each domain is virtualized as a single node).  The physical
+   Domain Border Routers (DBRs) are considered as the virtual router
+   interfaces, and all the other intra-domain routers of a domain
+   resemble the switch fabric of the corresponding virtual router.  In
+   this model, each virtual router can be identified by a domain ID
+   (i.e., the AS number).  A packet destined to a virtual router will be
+   processed by an ingress DBR of the corresponding domain where local
+   intra-domain policies can be applied (note that the local policy can
+
+
+
+Song & Retana              Expires 18 May 2024                  [Page 3]
+
+Internet-Draft                  DLSR SRH                   November 2023
+
+
+   be opaque to the controller outside of the domain).  Each virtual
+   router's performance is individually monitored and measured.  Such an
+   abstraction allows us to easily reuse the existing OAM protocols and
+   tools, yet at the domain level instead of the physical router level.
+
+   Under such a model, it is easy to fit the domain-level routing and
+   forwarding in the framework of SRv6 by deeming a domain as a segment
+   endpoint.  From the SRv6's perspective, a domain-level segment has no
+   difference from a physical node-level segment.  We only need to
+   specify a new type of SID to encode the domain, and then we can use
+   it in SRH to support Domain-Level Segment Routing (DLSR).  In this
+   document, we describe the Domain SID (DSID) encoding, explain the
+   DLSR processing and forwarding procedure with examples, and discuss
+   the major use cases of DLSR.  We show DLSR is fully compatible with
+   IPv6 and SRv6 architecture.  It introduces a new hierarchical
+   structure and a new semantics to SRv6, and therefore enables new
+   services.
+
+1.1.  Terminology
+
+   The following acronyms are used in this document:
+
+      DLSR - Domain-Level Source Routing
+
+      DSID - Domain Segment ID
+
+2.  Domain Level Segment Routing
+
+2.1.  Domain SID
+
+   The format of the DSID is shown in Figure 1.  The prefix is globally
+   assigned to indicate the SID type is of domain.  Following the prefix
+   is 32-bit domain ID which is used to uniquely identify a domain.  The
+   domain ID can be set the same as the AS number.  The remaining part
+   is used to encode functions and arguments for network programming.
+
+
+    0                                                              127
+    +-----------------+-------------------+-------------------------+
+    |Prefix (variable)| Domain ID (32-bit)|    Function+Argument    |
+    +-----------------+-------------------+-------------------------+
+    |<---- block  --->|<----- node ------>|
+    |<----------- locator  -------------->|
+
+
+
+                           Figure 1: DSID Format
+
+
+
+
+Song & Retana              Expires 18 May 2024                  [Page 4]
+
+Internet-Draft                  DLSR SRH                   November 2023
+
+
+   The locator part of the DSID is considered as an anycast address of
+   the domain which is advertised externally by all the DBRs of the
+   domain.  Therefore, a packet destined to a domain-level segment
+   (i.e., the destination IP address is a DSID) can reach the domain
+   through one of its DBRs according to the routing computation result.
+
+   The remaining part of the DSID can be used to encode the QoS
+   requirements or for other uses.  The encoding of this part is out of
+   the scope of this document.
+
+2.2.  SRH for DLSR
+
+   The SRH format for DLSR is identical to the standard format as
+   specified in [RFC8754].  The segment list can have mixed DSIDs and
+   other types of SIDs in arbitrary number and order.  An SRH can
+   specify a pure domain-level path in the sense of either strict or
+   loose source routing.  It is also possible to specify a path mixed
+   with domains and physical nodes for extended flexibility.  However,
+   since a DSID represents a domain, a few rules need to be observed
+   when specifying a path to guarantee the correct semantics.
+
+   *  The DSID of a domain X is not routable within X.  Therefore, the
+      next segment endpoint of a physical node in X MUST not be the DSID
+      of X.
+
+   *  The next segment endpoint of a domain-level segment endpoint
+      should usually be located outside of the domain, because the
+      entire domain is considered as a single endpoint.
+
+   *  An exception to the above rule is that: the last segment endpoint
+      (i.e., the final destination) can be within a domain-level segment
+      endpoint.  This is usually used for strict DLSR where the complete
+      domain-level path is specified.
+
+2.3.  DLSR Forwarding Examples
+
+   The path head end inserts the SRH to the packet.  In the case of
+   strict path DLSR, assume the domain-level path length is N (include
+   the source domain and the destination domain), we set SL = N-1.  We
+   use an example shown in Figure 2 to describe the forwarding process
+   for the strict path DLSR.
+
+
+
+
+
+
+
+
+
+
+Song & Retana              Expires 18 May 2024                  [Page 5]
+
+Internet-Draft                  DLSR SRH                   November 2023
+
+
+          AS0            AS1                   AS2             AS5
+    +-------------+ +------------+        +------------+ +-------------+
+    | Host    DBR | | DBR    DBR |        | DBR    DBR | | DBR    Host |
+    | +---+   +-+ | | +-+    +-+ |        | +-+    +-+ | | +-+   +---+ |
+    | |Src|...|x+-+-+-+a|....|b+-+--------+-+d|....|e+-+-+-+y|...|Dst| |
+    | +---+   +-+ | | +-+    +++ |        | +-+    +-+ | | +-+   +---+ |
+    |             | |  : DBR  :  |        |  : DBR  :  | |  :      :   |
+    |             | |  : +-+  :  |        |  : +-+  :  | |  : +-+  :   |
+    |             | |  :.|c|..:  |        |  :.|k|..:  | |  :.|z|..:   |
+    |             | |    +++     |        |    +++     | |    +++      |
+    +-------------+ +-----+------+        +-----+------+ +-----+-------+
+                          |                     |              |
+                       +--+---------+ +---------+--+           |
+                       |  |         | |         |  |           |
+                       | +++    +-+ | | +-+    +++ |           |
+                       | |f|....|g+-+-+-+h|....|i+-+-----------+
+                       | +-+    +-+ | | +-+    +-+ |
+                       | DBR    DBR | | DBR    DBR |
+                       +------------+ +------------+
+                             AS3           AS4
+
+                   Figure 2: DLSR Forwarding Example I
+
+   Assume the source node Src in AS0 would send a packet to the
+   destination node Dst in AS3 and it acquires a strict DLSR path <AS1,
+   AS2, AS5>.  The packet at Src is formatted as (Src, AS1)(Dst, AS5,
+   AS2, AS1; SL=3).  The packet is forwarded to DBR 'a'.  At 'a', the
+   packet is updated to (Src, AS2)(Dst, AS5, AS2, AS1; SL=2), and
+   forwarded to 'd'.  At 'd', the packet is updated to (Src, AS5)(Dst,
+   AS5, AS2, AS1; SL=1) and forwarded to 'y'.  At 'y', the packet is
+   updated to (Src, Dst)(Dst, AS5, AS2, AS1; SL=0) and forwarded to Dst.
+
+   The ingress DBR of a domain-level segment endpoint also processes the
+   functions and parameters carried in the DSID, as well as the optional
+   TLVs carried in the SRH.
+
+   In more general cases, domain-level segments can be mixed with node-
+   level segments for more flexible forwarding.  For example, in
+   Figure 2, if a path <AS3, e> is configured for a packet from Src to
+   Dst, the packet at Src is formatted as (Src, AS3)(Dst, e, AS3; SL=2)
+   and forwarded to 'f'.  At 'f'. the packet is updated to (Src, e)(Dst,
+   e, AS3; SL=1) and forwarded to 'e'.  At 'e', the packet is updated to
+   (Src, Dst)(Dst, e, AS3; SL=0) and forwarded to Dst. Note that if the
+   Penultimate Hop Popping (PHP) behavior is preferred, Node 'e' can
+   remove the SRH before forwarding the packet to Dst.
+
+
+
+
+
+
+Song & Retana              Expires 18 May 2024                  [Page 6]
+
+Internet-Draft                  DLSR SRH                   November 2023
+
+
+2.4.  DLSR SRH Compression
+
+   DLSR SIDs share the common prefix, and each has a 32-bit domain ID,
+   so both NEXT-C-SID flavor and REPLACE-C-SID flavor as specified in
+   [I-D.ietf-spring-srv6-srh-compression] can be supported to reduce the
+   SRH overhead.
+
+2.5.  Domain-level Segment vs. Node-level Segment
+
+   To some extent, a domain-level segment is equivalent to two node-
+   level segments (one for the domain ingress DBR and the other for the
+   domain egress DBR).  However, each domain only needs a globally
+   unique SID to represent but it may have many ingress and egress DBRs.
+   Using a domain-level segment is more compact than using two node-
+   level segments, and support multihoming without exposing the domain
+   topology and configuration.  Moreover, a domain-level segment
+   unambiguously defines the domain boundary (the node-level segment
+   lacks such a feature) so the use cases discussed in Section 3 can be
+   easily supported.
+
+   Although the DSID can also be used as a binding SID to bind some
+   local policy as configured by the global controller, in practice, the
+   intra-domain forwarding scheme and policy are preferred to be kept
+   private and controlled locally.  The domain-level segment makes such
+   provision straightforward.
+
+3.  Use Cases
+
+3.1.  End-to-End Cross-Domain QoS
+
+   Cross-domain QoS is a long-standing problem.  It needs a solution for
+   the emerging Internet-scale applications such as metaverse, 3D live
+   events, and remote interactive operations.  In the current Internet,
+   since the accountable entity such as domain is invisible at data
+   plane, it is difficult to assign the responsibilities and attribute
+   the service results.  By supporting domain-level routing and
+   forwarding, a business model can be fostered to enable Internet-scale
+   end-to-end QoS with the right level of manageable entity.  The
+   limited number of "hops" corresponds to the service providers who
+   have vested interests to support the value-added services and full
+   control of the means to achieve the QoS goal.  The domain level
+   routing and forwarding also decouple the intra-domain and inter-
+   domain, allowing each domain operator to independently innovate on
+   intra-domain traffic engineering and forwarding optimizations.  The
+   explicit domain boundary also allows the existing OAM standards and
+   tools to be applied at the domain level by considering each domain as
+   a node, making domain-level SLA auditable.
+
+
+
+
+Song & Retana              Expires 18 May 2024                  [Page 7]
+
+Internet-Draft                  DLSR SRH                   November 2023
+
+
+3.2.  Traffic Security and Privacy
+
+   For various business or legal reasons, certain customer traffic must
+   be retained within specific domains.  On the other hand, due to
+   disaster, outrage, and other political reasons, certain customer
+   traffic must avoid specific domains.  By specifying a domain-level
+   path, one can avoid or include domains for any security and privacy
+   reasons.  One can also guide traffic to certain domains for special
+   treatments such as security screening and lawful interception.
+
+3.3.  Domain Level Routing Policy
+
+   With a domain-level path, we can directly express the peering and
+   routing preferences at data plane.  Domain-level routing policies are
+   easy to be specified.  For example, we can pin certain traffic to a
+   specific domain where one of the anycast destinations is located.
+
+3.4.  Domain Level Traffic Engineering
+
+   One can provision multiple domain-level paths with the same of
+   different service level.  Path choosing or load balancing can be
+   applied on these paths to achieve the idea performance.
+
+3.5.  Service Function Chaining (SFC)
+
+   Domain level source routing allows service providers to collaborate
+   on providing distributed network services.  SFC is a general
+   technique to initiate an ordered set of service functions (e.g.,
+   firewall, load balancing, WAN optimization, NAT, and encryption) in
+   network and steer the user traffic through it.  Traditionally it can
+   only be used by a single service provider.  With DLSR, it is easier
+   to negotiate a plan to allocate different network functions in
+   different domains.  The service providers are compensated by the
+   nature of the functions and the contribution of each participating
+   domain.  The SFC descriptor (e.g., NSH [RFC8300]) can be carried as a
+   SRH option.
+
+3.6.  Path Validation
+
+   DLSR provides a natural way to support path validation at the domain
+   level.  The path information is kept in the SRH and can be verified
+   at each segment endpoint.  Various verification algorithms and
+   protocols can be used (e.g., IOAM POT [RFC9197]).
+
+
+
+
+
+
+
+
+Song & Retana              Expires 18 May 2024                  [Page 8]
+
+Internet-Draft                  DLSR SRH                   November 2023
+
+
+3.7.  Hierarchical Segment Routing
+
+   When the SR domain covers multiple ASes, DLSR can be used to
+   effectively reduce the packet overhead and protect the privacy.  In
+   this case, the packet is forwarded at the domain level.  Each DSID is
+   configured as a binding SID, so at each domain border, a local SR
+   policy is applied to tunnel through the domain.  On the data plane,
+   any domain do not know the policy of the other domains.
+
+4.  Security Considerations
+
+   DLSR shares all the security considerations for SRv6.  In DLSR, one
+   AS is considered a single node in the SR domain, so the SR domain is
+   beyond the control of any single AS.  It is conceivable a higher
+   level entity may be needed to oversee the domain-level path
+   provision, or stricter security and authentication measurements need
+   to be applied to avoid any abuse or attack.
+
+   IETF has assembled a team of expert to provide a solid security
+   analysis of SRv6.  The output is applicable to DLSR as well, and DLSR
+   also provides new perspective for analysis.
+
+5.  IANA Considerations
+
+   This document requires no IANA actions.
+
+6.  Acknowledgments
+
+   The authors would like to thank Tony Li, Toerless Eckert, Cheng Li,
+   and Nan Geng for their comments and suggestions.
+
+7.  References
+
+7.1.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
+
+   [RFC8200]  Deering, S. and R. Hinden, "Internet Protocol, Version 6
+              (IPv6) Specification", STD 86, RFC 8200,
+              DOI 10.17487/RFC8200, July 2017,
+              <https://www.rfc-editor.org/info/rfc8200>.
+
+
+
+
+
+
+
+Song & Retana              Expires 18 May 2024                  [Page 9]
+
+Internet-Draft                  DLSR SRH                   November 2023
+
+
+   [RFC8754]  Filsfils, C., Ed., Dukes, D., Ed., Previdi, S., Leddy, J.,
+              Matsushima, S., and D. Voyer, "IPv6 Segment Routing Header
+              (SRH)", RFC 8754, DOI 10.17487/RFC8754, March 2020,
+              <https://www.rfc-editor.org/info/rfc8754>.
+
+7.2.  Informative References
+
+   [I-D.ietf-spring-srv6-srh-compression]
+              Cheng, W., Filsfils, C., Li, Z., Decraene, B., and F.
+              Clad, "Compressed SRv6 Segment List Encoding", Work in
+              Progress, Internet-Draft, draft-ietf-spring-srv6-srh-
+              compression-09, 23 October 2023,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-spring-
+              srv6-srh-compression-09>.
+
+   [RFC8300]  Quinn, P., Ed., Elzur, U., Ed., and C. Pignataro, Ed.,
+              "Network Service Header (NSH)", RFC 8300,
+              DOI 10.17487/RFC8300, January 2018,
+              <https://www.rfc-editor.org/info/rfc8300>.
+
+   [RFC9197]  Brockners, F., Ed., Bhandari, S., Ed., and T. Mizrahi,
+              Ed., "Data Fields for In Situ Operations, Administration,
+              and Maintenance (IOAM)", RFC 9197, DOI 10.17487/RFC9197,
+              May 2022, <https://www.rfc-editor.org/info/rfc9197>.
+
+Authors' Addresses
+
+   Haoyu Song
+   Futurewei Technologies
+   Santa Clara, CA
+   United States of America
+   Email: haoyu.song@futurewei.com
+
+
+   Alvaro Retana
+   Futurewei Technologies
+   United States of America
+   Email: aretana.ietf@gmail.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+Song & Retana              Expires 18 May 2024                 [Page 10]
