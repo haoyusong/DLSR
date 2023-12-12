@@ -22,11 +22,11 @@
       <organization>Futurewei Technologies</organization>
       <address>
         <postal>
-          <street></street>
+          <street>2330 Central Expressway</street>
           <city>Santa Clara</city>
           <region>CA</region>
-          <code></code>
-          <country>US</country>
+          <code>95050</code>
+          <country>USA</country>
         </postal>
         <email>haoyu.song@futurewei.com</email>
       </address>
@@ -36,17 +36,19 @@
       <organization>Futurewei Technologies</organization>
       <address>
         <postal>
-          <street></street>
-          <city></city>
-          <region></region>
-          <code></code>
-          <country>US</country>
+          <street>2330 Central Expressway</street>
+          <city>Santa Clara</city>
+          <region>CA</region>
+          <code>95050</code>
+          <country>USA</country>
         </postal>
-        <email>aretana.ietf@gmail.com</email>
+        <email>aretana@futurewei.com</email>
       </address>
     </author>
 
-  <area/>
+  <date year="2023"/>
+
+  <area>Routing</area>
   <workgroup>Internet Engineering Task Force</workgroup>
 
   <keyword>IPv6</keyword>
@@ -56,20 +58,10 @@
   <keyword>Source Routing</keyword>
 
   <abstract>
-    <t>We propose to make network domains as an explicit entity for packet forwarding, in order to better support 
-	   end-to-end quality of service, traffic privacy and security, domain-level policy, and cross-domain traffic engineering. 
-       In the context of IPv6, the Domain-Level Segment Routing (DLSR) can be considered as a special case of SRv6, in which
-	   each domain is virtualized as a single node and encoded as a Domain SID (DSID).
-       SRH is used to support DLSR, and DSIDs can be mixed with any other types of SIDs in an SRH.    
-	   DLSR allows each domain to hide its intra-domain routing/forwarding details and be managed and monitored as a whole.
-       The scheme is compatible with IPv6 and SRv6 architecture. </t>
+    <t>This document describes Domain-Level Segment Routing (DLSR). Each domain is virtualized as a single node and encoded as a Domain SID (DSID) in the existing Service Routing Header (SRH).</t>
+
+    <t>The domains involved belong to a single Segment Routing Domain, as defined in RFC 8402. DLSR can be used to better support end-to-end quality of service, traffic privacy and security, domain-level policy, and cross-domain traffic engineering.</t>
   </abstract>
-  
-  <note title="Requirements Language">
-           <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
-           "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
-           document are to be interpreted as described in <xref target="RFC2119">RFC 2119</xref>.</t>
-  </note>
 </front>
 
   <middle>
@@ -107,6 +99,15 @@
           <li>DSID - Domain Segment ID</li>
         </ul>
 	
+      </section>
+      <section anchor="requirements">
+        <name>Requirements Language</name>
+        <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL",
+          "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT
+          RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be
+          interpreted as described in BCP 14 <xref target="RFC2119"/>
+          <xref target="RFC8174"/> when, and only when, they appear in
+          all capitals, as shown here.</t>
       </section>
     </section>
  
@@ -320,16 +321,15 @@
 <back>
     
       <references title="Normative References">
-	    <?rfc include='reference.RFC.2119'?> 	
-		<?rfc include='reference.RFC.8200'?>
-        <?rfc include='reference.RFC.8754'?> 
-		
-      </references>
-	  
-      <references title="Informative References">
-	    <?rfc include='reference.RFC.8300'?>
-	    <?rfc include='reference.I-D.ietf-spring-srv6-srh-compression'?>	
-		<?rfc include='reference.RFC.9197'?>
+	    <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"/>	
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8200.xml"/>
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8754.xml"/> 
+		  </references>
+	    <references title="Informative References">
+	    <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8300.xml"/>
+      <xi:include href="https://www.rfc-editor.org/refs/bibxml3/reference.I-D.ietf-spring-srv6-srh-compression.xml"/>
+	    <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.9197.xml"/>
       </references>
     
   </back>
