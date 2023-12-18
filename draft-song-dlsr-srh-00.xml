@@ -148,19 +148,20 @@
 	  </section>
 	  
 	  <section anchor="srh">
-	  <name>SRH for DLSR</name>
+	  <name>Use of the Segment Routing Header (SRH)</name>
 	  
 	  <t>
-	     The SRH format for DLSR is identical to the standard format as specified in <xref target="RFC8754"/>.
-		 The segment list can have mixed DSIDs and other types of SIDs in arbitrary number and order.  
-		 An SRH can specify a pure domain-level path in the sense of either strict or loose source routing. 
-		 It is also possible to specify a path mixed with domains and physical nodes for extended flexibility. 
-		 However, since a DSID represents a domain, a few rules need to be observed when specifying a path to guarantee the correct semantics. 
+    No changes are required to the SRH <xref target="RFC8754"/>. The segment list can contain only DSIDs to specify a domain-level path, loose or strict. It can also contain a mix of SIDs in any number or order.  However, since a DSID represents a domain, the following rules apply:
 	  </t>
 	  <ul>
-    <li>The DSID of a domain X is not routable within X. Therefore, the next segment endpoint of a physical node in X MUST not be the DSID of X.</li>
-    <li>The next segment endpoint of a domain-level segment endpoint should usually be located outside of the domain, because the entire domain is considered as a single endpoint.</li>
-    <li>An exception to the above rule is that: the last segment endpoint (i.e., the final destination) can be within a domain-level segment endpoint. This is usually used for strict DLSR where the complete domain-level path is specified.</li>
+    <li>The DSID of Domain ID X MUST NOT be routable within that domain.  Therefore, an SR Node processing the SRv6 packet MUST drop it if the destination address (DA) would result from a DSID for the local Domain ID.</li>
+    <li>The next segment endpoint of a domain-level segment endpoint should usually be located outside of the domain, because the entire domain is considered as a single endpoint.
+    
+    [I didn't update this bullet because I'm not sure what it means.  The "should usually" part seems to indicate that there are times when the behavior is ok.  ??]
+    </li>
+    <li>An exception to the above rule is that: the last segment endpoint (i.e., the final destination) can be within a domain-level segment endpoint. This is usually used for strict DLSR where the complete domain-level path is specified.
+    
+    [I didn't update this bullet either because it builds from the last one. If I'm interpreting the text correctly, it says that the last SID can be a DSID.  I'm not sure how this is an exception of the previous bullet.]</li>
     </ul>
 	  
 	  </section>
