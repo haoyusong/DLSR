@@ -67,28 +67,22 @@
   <middle>
     <section anchor="Introduction" numbered="true" toc="default">
       <name>Introduction</name>
-      <t>
-	     The Internet is a network of networks, in which each basic network, known as an Autonomous Domain (AS), is independently operated by an Internet Service Provider (ISP). Although used by the inter-domain routing protocol Border Gateway Protocol (BGP), ASes are invisible in the forwarding plane, to both end-hosts and routers. At each router in the Internet, packet forwarding is based on a Forwarding Information Base (FIB), which only provides the next hop (i.e., a next immediate router towards the destination) information, without showing which domain the packet is from, in, and to. Such a flat forwarding architecture misses some opportunities to achieve certain high-level goals of forwarding.        
-	  </t>
-	  
-	  <t>
-		 The AS or domain (we will use domain interchangeably with the term AS hereafter) sets a clear boundary for responsibility. The service provider of a domain can make decision on peering agreements and various routing policies, and take charge of intra-domain routing and forwarding schemes. In the seven layers of networking model, domain can be naturally considered as a sub-layer located between Layer 3 (i.e., network layer) and Layer 4 (i.e., transport layer). In the past few years, it has been suggested to introduce the Layer 3.5 (L3.5) into the protocol stack as a means to de-ossify the Internet architecture by removing the IP protocol as the thin waist at L3. However, even without the ambitious goal, the introduction of the Layer 3.5 is still beneficial in the context of the IP networks. For example, the hierarchical layer separation may simplify the routing and forwarding; at the domain level, fewer entities need to be dealt with on a forwarding path and each entity happens to correspond to a single accountable operator; the new overlay can hide the underlay details so the intra-domain routing and forwarding can be kept as internal procedure for good reasons.    
-	  </t>
-      
-	  <t>
-	     The IP network is migrating to IPv6. IPv6 was designed to be extensible with the Extension Header (EH) mechanism <xref target="RFC8200"/>.
-         EH is conveniently located between the base IPv6 header (L3) and the transport protocol header (L4), suitable for a L3.5 header. A Routing Header (RH) is specified as an EH type. SRv6 <xref target="RFC8754"/> has taken advantage of it to support a flavor of node-level source routing on IPv6 data plane using an RH type named SRH. With great extensibility and programmability, SRv6 has shown potential in supporting new services, making the network intelligent and simplifying the network protocols. It is crucial to take advantage of its momentum and exploit its extensibility to make it even more powerful. 
-	  </t>
-	  
-	  <t>With the domain as the explicit L3.5 entity, we can take a simplified view of the Internet by considering each domain as 
-	     a virtual router (i.e., each domain is virtualized as a single node). The physical Domain Border Routers (DBRs) are considered as the virtual router interfaces, and all the other intra-domain routers of a domain resemble the switch fabric of the corresponding virtual router. 
-		 In this model, each virtual router can be identified by a domain ID (i.e., the AS number). A packet destined to a virtual router will be processed by an ingress DBR of the corresponding domain where local intra-domain policies can be applied (note that the local policy can be opaque to the controller outside of the domain). Each virtual router's performance is individually monitored and measured. Such an abstraction allows us to easily reuse the existing OAM protocols and tools, yet at the domain level instead of the physical router level. 
-	  </t>
-	  
-	  <t>Under such a model, it is easy to fit the domain-level routing and forwarding in the framework of SRv6 by deeming a domain as a segment endpoint. From the SRv6's perspective, a domain-level segment has no difference from a physical node-level segment.
-	  We only need to specify a new type of SID to encode the domain, and then we can 
-	  use it in SRH to support Domain-Level Segment Routing (DLSR). In this document, we describe the Domain SID (DSID) encoding, explain the DLSR processing and forwarding procedure with examples, and discuss the major use cases of DLSR. We show DLSR is fully compatible with IPv6 and SRv6 architecture. It introduces a new hierarchical structure and a new semantics to SRv6, and therefore enables new services. 
-	  </t>
+    <t>
+    [SR operates in a single SR domain (rfc8402).  Any talk of 
+     inter-domain when referring to separate AS administrators, puts 
+     this work out of scope for spring.  The draft should talk about 
+     e2e within a set of domains under a single administration -- even 
+     if we know the applicability is wider.]
+    </t>
+    <t>
+    This document describes Domain-Level Segment Routing (DLSR). Each domain is virtualized as a single node and encoded as a Domain SID (DSID) in the existing Service Routing Header (SRH) <xref target="RFC8457"/>.
+    </t>
+    <t>
+    The domains involved belong to a single Segment Routing Domain, as defined in <xref target="RFC8402"/>. DLSR can be used to better support end-to-end quality of service, traffic privacy and security, domain-level policy, and cross-domain traffic engineering.
+    </t>
+    <t>
+    DLSR is described in <xref target="DLSR"/>.  The DSID is specified in <xref target="dsidformat"/>.  Examples of use cases are presented in <xref target="usecase"/>.
+    </t>
 	  
       <section anchor="Terminology" numbered="true" toc="default">
         <name>Terminology</name>
