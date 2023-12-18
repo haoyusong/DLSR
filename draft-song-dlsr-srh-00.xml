@@ -9,6 +9,7 @@
 <rfc
   xmlns:xi="http://www.w3.org/2001/XInclude"
   category="std"
+  consensus="true"
   docName="draft-song-dlsr-srh-00"
   ipr="trust200902"
   submissionType="IETF"
@@ -87,11 +88,9 @@
       <section anchor="Terminology" numbered="true" toc="default">
         <name>Terminology</name>
 	
-        <t>The following acronyms are used in this document:</t>
-        <ul empty="true" spacing="normal">
-		  <li>DLSR - Domain-Level Source Routing</li>
-          <li>DSID - Domain Segment ID</li>
-        </ul>
+        <t>
+        This document uses the terminology defined in <xref target="RFC8402"/>, <xref target="RFC8754"/>, and <xref target="RFC8986"/>.
+        </t>
 	
       </section>
       <section anchor="requirements">
@@ -115,16 +114,12 @@
 	  
 
      <t>
-	    The format of the DSID is shown in <xref target="fig:dsid"/>.
-		The prefix is globally assigned to indicate the SID type is of domain.
-		Following the prefix is 32-bit domain ID which is used to uniquely identify a domain. 
-		The domain ID can be set the same as the AS number. The remaining part is used to encode functions and arguments for network programming.  
-	 </t>
+	    The format of the DSID is shown in <xref target="figdsid"/>.
+     </t>
 
-
-     <figure anchor="fig:dsid">
+     <figure anchor="figdsid">
         <name>DSID Format</name>
-        <artwork align="center" name="fig:dsid" type="" alt=""><![CDATA[
+        <artwork align="center" name="figdsid" type="" alt=""><![CDATA[
 		
 0                                                              127		
 +-----------------+-------------------+-------------------------+
@@ -137,15 +132,18 @@
          ]]></artwork>
       </figure>
 
-
-	  <t>
-	  The locator part of the DSID is considered as an anycast address of the domain which is advertised externally by all the DBRs of the domain.
-	  Therefore, a packet destined to a domain-level segment (i.e., the destination IP address is a DSID) can reach the domain through one of its DBRs according to the routing computation result. 
-	  </t>
-	  
-	  <t>
-	  The remaining part of the DSID can be used to encode the QoS requirements or for other uses. The encoding of this part is out of the scope of this document.
-	  </t>
+     <t>
+     The locator (LOC) of the DSID is represented as B:N <xref target ="RFC8986"/>, where B (block/Prefix) is the IPv6 prefix allocated for DSIDs and N (node/Domain ID) is the identifier of the domain instantiating the SID. 
+     </t>
+     <t>
+     The use of a globally-assigned (to the SR domain) Prefix that indicates the SID type is DSID is RECOMMENDED. The Domain ID is a 32-bit number that uniquely identifies a domain. The Domain ID can be set to the autonomous system (AS) number <xref target="RFC6793"/>.
+     </t>
+     <t>
+     A DSID using a common locator should be advertised by all the domain border routers (DBR) of the domain identified by the Domain ID. The result is an anycast address to the domain. Therefore, a packet destined to a DSID (i.e., the destination IP address is the routing table is the locator) can reach the domain through one of its DBRs, according to the routing computation result. 
+     </t>
+     <t>
+     The remaining bits can be used to encode functions and arguments for network programming.  The definition and use of any such behaviors are outside the scope of this document.
+     </t>
       
 	  </section>
 	  
@@ -159,15 +157,11 @@
 		 It is also possible to specify a path mixed with domains and physical nodes for extended flexibility. 
 		 However, since a DSID represents a domain, a few rules need to be observed when specifying a path to guarantee the correct semantics. 
 	  </t>
-	  
-	  <t><list style="symbols">
-	  <t>The DSID of a domain X is not routable within X. Therefore, the next segment endpoint of a physical node in X MUST not be the DSID of X. </t>
-
-      <t>The next segment endpoint of a domain-level segment endpoint should usually be located outside of the domain, because the entire domain is considered as a single endpoint.</t>	  
-	  
-	  <t>An exception to the above rule is that: the last segment endpoint (i.e., the final destination) can be within a domain-level segment endpoint. This is usually used for strict DLSR where the complete domain-level path is specified.</t>
-	  
-	  </list></t>
+	  <ul>
+    <li>The DSID of a domain X is not routable within X. Therefore, the next segment endpoint of a physical node in X MUST not be the DSID of X.</li>
+    <li>The next segment endpoint of a domain-level segment endpoint should usually be located outside of the domain, because the entire domain is considered as a single endpoint.</li>
+    <li>An exception to the above rule is that: the last segment endpoint (i.e., the final destination) can be within a domain-level segment endpoint. This is usually used for strict DLSR where the complete domain-level path is specified.</li>
+    </ul>
 	  
 	  </section>
 	  
@@ -175,12 +169,12 @@
 	  <name>DLSR Forwarding Examples</name>
 		
 	  
-	  <t>The path head end inserts the SRH to the packet. In the case of strict path DLSR, assume the domain-level path length is N (include the source domain and the destination domain), we set SL = N-1. We use an example shown in <xref target="fig:net" /> to describe the forwarding process for the strict path DLSR.
+	  <t>The path head end inserts the SRH to the packet. In the case of strict path DLSR, assume the domain-level path length is N (include the source domain and the destination domain), we set SL = N-1. We use an example shown in <xref target="fignet" /> to describe the forwarding process for the strict path DLSR.
 	  </t>
 
-	  <figure anchor="fig:net">
+	  <figure anchor="fignet">
         <name>DLSR Forwarding Example I</name>
-        <artwork align="center" name="fig:net" type="" alt=""><![CDATA[
+        <artwork align="center" name="fignet" type="" alt=""><![CDATA[
 
         AS0            AS1                   AS2             AS5
   +-------------+ +------------+        +------------+ +-------------+
@@ -216,12 +210,12 @@
 
 	  <t>The ingress DBR of a domain-level segment endpoint also processes the functions and parameters carried in the DSID, as well as the optional TLVs carried in the SRH. </t> 
 	  
-	  <t>In more general cases, domain-level segments can be mixed with node-level segments for more flexible forwarding. For example, in <xref target="fig:net" />, if a path &lt;AS3, e&gt; is configured for a packet from Src to Dst, the packet at Src is formatted as (Src, AS3)(Dst, e, AS3; SL=2) and forwarded to 'f'.  At 'f'. the packet is updated to (Src, e)(Dst, e, AS3; SL=1) and forwarded to 'e'. At 'e', the packet is updated to (Src, Dst)(Dst, e, AS3; SL=0) and forwarded to Dst. Note that if the Penultimate Hop Popping (PHP) behavior is preferred, Node 'e' can remove the SRH before forwarding the packet to Dst. </t>
+	  <t>In more general cases, domain-level segments can be mixed with node-level segments for more flexible forwarding. For example, in <xref target="fignet" />, if a path &lt;AS3, e&gt; is configured for a packet from Src to Dst, the packet at Src is formatted as (Src, AS3)(Dst, e, AS3; SL=2) and forwarded to 'f'.  At 'f'. the packet is updated to (Src, e)(Dst, e, AS3; SL=1) and forwarded to 'e'. At 'e', the packet is updated to (Src, Dst)(Dst, e, AS3; SL=0) and forwarded to Dst. Note that if the Penultimate Hop Popping (PHP) behavior is preferred, Node 'e' can remove the SRH before forwarding the packet to Dst. </t>
 	  
 	  </section>
  
  
-      <section anchor="DLSR SRH Compression" numbered="true" toc="default">
+      <section anchor="compression" numbered="true" toc="default">
         <name>DLSR SRH Compression</name>
 		<t>DLSR SIDs share the common prefix, and each has a 32-bit domain ID, so both NEXT-C-SID flavor and REPLACE-C-SID flavor as specified in <xref target="I-D.ietf-spring-srv6-srh-compression"/> can be supported to reduce the SRH overhead.
         </t>
@@ -317,12 +311,15 @@
       <references title="Normative References">
 	    <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
       <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"/>	
-      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8200.xml"/>
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8402.xml"/>
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8457.xml"/>
       <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8754.xml"/> 
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8986.xml"/>
 		  </references>
 	    <references title="Informative References">
-	    <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8300.xml"/>
-      <xi:include href="https://www.rfc-editor.org/refs/bibxml3/reference.I-D.ietf-spring-srv6-srh-compression.xml"/>
+	    <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-spring-srv6-srh-compression.xml"/>
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.6793.xml"/>
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8300.xml"/>
 	    <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.9197.xml"/>
       </references>
     
