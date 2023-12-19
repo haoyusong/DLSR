@@ -263,17 +263,7 @@
 		<t>DLSR SIDs share the common prefix, and each has a 32-bit domain ID, so both NEXT-C-SID flavor and REPLACE-C-SID flavor as specified in <xref target="I-D.ietf-spring-srv6-srh-compression"/> can be supported to reduce the SRH overhead.
         </t>
    
-      </section>
-  
-   
-     <section anchor="compare" numbered="true" toc="default">
-	    <name>Domain-level Segment vs. Node-level Segment</name>
-        <t>To some extent, a domain-level segment is equivalent to two node-level segments (one for the domain ingress DBR and the other for the domain egress DBR). However, each domain only needs a globally unique SID to represent but it may have many ingress and egress DBRs. Using a domain-level segment is more compact than using two node-level segments, and support multihoming without exposing the domain topology and configuration. Moreover, a domain-level segment unambiguously defines the domain boundary (the node-level segment lacks such a feature) so the use cases discussed in <xref target="usecase" /> can be easily supported.</t>
-   		
-		<t>Although the DSID can also be used as a binding SID to bind some local policy as configured by the global controller, in practice, the intra-domain forwarding scheme and policy are preferred to be kept private and controlled locally. The domain-level segment makes such provision straightforward.</t>
-		
-     </section>
-	 
+      </section> 
    </section>
   
   <section anchor="usecase" numbered="true" toc="default">
