@@ -69,13 +69,6 @@
     <section anchor="Introduction" numbered="true" toc="default">
       <name>Introduction</name>
     <t>
-    [SR operates in a single SR domain (rfc8402).  Any talk of 
-     inter-domain when referring to separate AS administrators, puts 
-     this work out of scope for spring.  The draft should talk about 
-     e2e within a set of domains under a single administration -- even 
-     if we know the applicability is wider.]
-    </t>
-    <t>
     This document describes Domain-Level Segment Routing (DLSR). Each domain is virtualized as a single node and encoded as a Domain SID (DSID) in the existing Service Routing Header (SRH) <xref target="RFC8457"/>.
     </t>
     <t>
@@ -156,12 +149,9 @@
 	  <ul>
     <li>The DSID of Domain ID X MUST NOT be routable within that domain.  Therefore, an SR Node processing the SRv6 packet MUST drop it if the destination address (DA) would result from a DSID for the local Domain ID.</li>
     <li>The next segment endpoint of a domain-level segment endpoint should usually be located outside of the domain, because the entire domain is considered as a single endpoint.
-    
-    [I didn't update this bullet because I'm not sure what it means.  The "should usually" part seems to indicate that there are times when the behavior is ok.  ??]
     </li>
     <li>An exception to the above rule is that: the last segment endpoint (i.e., the final destination) can be within a domain-level segment endpoint. This is usually used for strict DLSR where the complete domain-level path is specified.
-    
-    [I didn't update this bullet either because it builds from the last one. If I'm interpreting the text correctly, it says that the last SID can be a DSID.  I'm not sure how this is an exception of the previous bullet.]</li>
+    </li>
     </ul>
 	  
 	  </section>
