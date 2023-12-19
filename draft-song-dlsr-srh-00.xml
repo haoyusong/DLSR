@@ -169,50 +169,102 @@
       <section anchor="DLSRFWD">
 	  <name>DLSR Forwarding Examples</name>
 		
-	  
-	  <t>The path head end inserts the SRH to the packet. In the case of strict path DLSR, assume the domain-level path length is N (include the source domain and the destination domain), we set SL = N-1. We use an example shown in <xref target="fignet" /> to describe the forwarding process for the strict path DLSR.
+	  <t>
+    In general, the SR Source Node <xref target="RFC8754"/> pushes an IPv6 header with its own SRH containing only a list of DSIDs or a mix with other SID types. <xref target="fignet"/> is the reference to describe the forwarding process using the abstract representation from <xref target="RFC8754"/>. The DSID for a Domain ID X is represented as ASX.  In <xref target="fignet"/>, all the nodes shown are DBRs and DLSR-capable.
 	  </t>
 
 	  <figure anchor="fignet">
         <name>DLSR Forwarding Example I</name>
         <artwork align="center" name="fignet" type="" alt=""><![CDATA[
 
-        AS0            AS1                   AS2             AS5
-  +-------------+ +------------+        +------------+ +-------------+
-  | Host    DBR | | DBR    DBR |        | DBR    DBR | | DBR    Host |
-  | +---+   +-+ | | +-+    +-+ |        | +-+    +-+ | | +-+   +---+ |
-  | |Src|...|x+-+-+-+a|....|b+-+--------+-+d|....|e+-+-+-+y|...|Dst| |
-  | +---+   +-+ | | +-+    +++ |        | +-+    +-+ | | +-+   +---+ |
-  |             | |  : DBR  :  |        |  : DBR  :  | |  :      :   |
-  |             | |  : +-+  :  |        |  : +-+  :  | |  : +-+  :   |
-  |             | |  :.|c|..:  |        |  :.|k|..:  | |  :.|z|..:   |
-  |             | |    +++     |        |    +++     | |    +++      |
-  +-------------+ +-----+------+        +-----+------+ +-----+-------+
-                        |                     |              |
-                     +--+---------+ +---------+--+           |
-                     |  |         | |         |  |           |
-                     | +++    +-+ | | +-+    +++ |           |
-                     | |f|....|g+-+-+-+h|....|i+-+-----------+
-                     | +-+    +-+ | | +-+    +-+ |
-                     | DBR    DBR | | DBR    DBR |
-                     +------------+ +------------+
-                           AS3           AS4
+      AS64500        AS64501             AS64502        AS64505
+  +-------------+ +------------+      +------------+ +-------------+
+  | Host    DBR | | DBR    DBR |      | DBR    DBR | | DBR    Host |
+  | +---+   +-+ | | +-+    +-+ |      | +-+    +-+ | | +-+   +---+ |
+  | |Src|...|x+-+-+-+a|....|b+-+------+-+d|....|e+-+-+-+y|...|Dst| |
+  | +---+   +-+ | | +-+    +++ |      | +-+    +-+ | | +-+   +---+ |
+  |             | |  : DBR  :  |      |  :  DBR :  | |  : DBR  :   |
+  |             | |  : +-+  :  |      |  :  +-+ :  | |  : +-+  :   |
+  |             | |  :.|c|..:  |      |  :..|k|.:  | |  :.|z|..:   |
+  |             | |    +++     |      |     +++    | |    +++      |
+  +-------------+ +-----+------+      +------+-----+ +-----+-------+
+                        |                    |             |
+                     +--+---------+ +--------+--+          |
+                     |  |         | |        |  |          |
+                     | +++    +-+ | | +-+   +++ |          |
+                     | |f|....|g+-+-+-+h|...|i+-+----------+
+                     | +-+    +-+ | | +-+   +-+ |
+                     | DBR    DBR | | DBR   DBR |
+                     +------------+ +-----------+
+                        AS64503        AS64504
 		]]></artwork>
       </figure>
-		
-	  <t>Assume the source node Src in AS0 would send a packet to the destination node Dst in AS3 and it acquires 
-	  a strict DLSR path &lt;AS1, AS2, AS5&gt;. 
-	  The packet at Src is formatted as (Src, AS1)(Dst, AS5, AS2, AS1; SL=3). 
-	  The packet is forwarded to DBR 'a'. At 'a', the packet is updated to (Src, AS2)(Dst, AS5, AS2, AS1; SL=2), 
-	  and forwarded to 'd'.  At 'd', the packet is updated to (Src, AS5)(Dst, AS5, AS2, AS1; SL=1) 
-	  and forwarded to 'y'. At 'y', the packet is updated to (Src, Dst)(Dst, AS5, AS2, AS1; SL=0) 
-	  and forwarded to Dst. 
-	  </t>
-
-	  <t>The ingress DBR of a domain-level segment endpoint also processes the functions and parameters carried in the DSID, as well as the optional TLVs carried in the SRH. </t> 
-	  
-	  <t>In more general cases, domain-level segments can be mixed with node-level segments for more flexible forwarding. For example, in <xref target="fignet" />, if a path &lt;AS3, e&gt; is configured for a packet from Src to Dst, the packet at Src is formatted as (Src, AS3)(Dst, e, AS3; SL=2) and forwarded to 'f'.  At 'f'. the packet is updated to (Src, e)(Dst, e, AS3; SL=1) and forwarded to 'e'. At 'e', the packet is updated to (Src, Dst)(Dst, e, AS3; SL=0) and forwarded to Dst. Note that if the Penultimate Hop Popping (PHP) behavior is preferred, Node 'e' can remove the SRH before forwarding the packet to Dst. </t>
-	  
+	 <t>
+   For example, host Src (in AS64500) sends a packet to host Dst (in AS64505) via an SR Policy &lt;AS64501, AS64502, AS64505&gt;, the packet is
+   </t>
+   <t>
+   P1: (ASrc,AS64501)(ADst, AS64505, AS64502, AS64501; SL=3)
+   </t>
+   <t>
+   Node x acts as transit node for packet P1 and forwards it towards AS64501.  In this case, there is only one DBR in AS64501 advertising the DSID (node a).
+   </t>
+   <t>
+   Node a receives packet P1 and, using the logic in <xref target="RFC8754"/>, sends packet
+   </t>
+   <t>
+   P2: (ASrc,AS64502)(ADst, AS64505, AS64502, AS64501; SL=2)
+   </t>
+   <t>
+   toward AS64502.  In this case, the internal metrics will determine the path toward DBR d, either through transit node b or transit nodes c and b.  Note that there wasn't a connection between AS64501 and AS64502, or DBR d didn't advertise the DSID (but DBR k did) then the packet would be forwarded through AS64503 and AS64504.
+   </t>
+   <t>
+   Node d receives packet P2 and, using the logic in <xref target="RFC8754"/>, sends packet
+   </t>
+   <t>
+   P3: (ASrc,AS64505)(ADst, AS64505, AS64502, AS64501; SL=1)
+   </t>
+   <t>
+   toward AS64505.  In this case, the internal metrics will determine the path toward DBR y, either through transit node e or transit nodes k and e.  Note that there wasn't a connection between AS64502 and AS64505, or DBR y didn't advertise the DSID (but DBR z did) then the packet would be forwarded through AS64504.
+   </t>
+   <t>
+   Node y receives packet P3 and, using the logic in <xref target="RFC8754"/>, sends packet
+   </t>
+   <t>
+   P4: (ASrc,ADst)(ADst, AS64505, AS64502, AS64501; SL=0)
+   </t>
+   <t>
+   on the interface toward Dst.
+   </t>
+   <t>
+   In another example, host Src sends a packet to host Dst via an SR Policy &lt;AS64503, Ae&gt;, the packet is
+   </t>
+   <t>
+   P5: (ASrc,AS64503)(ADst,Ae,A64503; SL=2)
+   </t>
+   <t>
+   Nodes x, a, and c act as transit nodes for packet P5 and forward it towards AS64503.
+   </t>
+   <t>
+   Node f receives packet P5 and, using the logic in <xref target="RFC8754"/>, sends packet
+   </t>
+   <t>
+   P6: (ASrc,Ae)(ADst,Ae,A64503; SL=1)
+   </t>
+   <t>
+   toward node e.  In this case, the shortest/best path to reach node e is through AS64504.  Nodes g, h, i, and k act as transit nodes for packet P6.
+   </t>
+   <t>
+   Node e receives packet P6 and, using the logic in <xref target="RFC8754"/>, sends packet
+   </t>
+   <t>
+   P7: (ASrc,ADst)(ADst,Ae,A64503; SL=0)
+   </t>
+   <t>
+   toward AS64505, where node Dst is located.
+   </t>
+   <t>
+   Note that if the Penultimate Segment Pop (PSP) behavior <xref target="RFC8986"/> is used, node e can remove the SRH before forwarding the packet to node Dst.
+   </t>
 	  </section>
  
  
