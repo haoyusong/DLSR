@@ -317,13 +317,13 @@
   
     <section anchor="Security" numbered="true" toc="default">
       <name>Security Considerations</name>
-      
-      <t>DLSR shares all the security considerations for SRv6. In DLSR, one AS is considered a single node in the SR domain,
+      <t>
+      Considering that the intent of the DSID is to be used inside a single SR domain, the security considerations from <xref target="RFC8402"/>, <xref target="RFC8754"/>, and <xref target="RFC8986"/> apply.
+      </t>
+      <t>In DLSR, one AS is considered a single node in the SR domain,
          so the SR domain is beyond the control of any single AS. It is conceivable a higher level entity may be needed to oversee the 
          domain-level path provision, or stricter security and authentication measurements need to be applied to avoid any abuse or attack. </t>
       
-	  <t>IETF has assembled a team of expert to provide a solid security analysis of SRv6. The output is applicable to DLSR as well, and DLSR 
-	     also provides new perspective for analysis.</t>
     </section>
     
 	<section anchor="IANA" numbered="true" toc="default">
