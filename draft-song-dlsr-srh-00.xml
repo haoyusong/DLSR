@@ -1,31 +1,20 @@
-<?xml version="1.0" encoding="US-ASCII"?>
-<!-- This template is for creating an Internet Draft using xml2rfc,
-     which is available here: http://xml.resource.org. -->
-<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
-<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
-<!-- used by XSLT processors -->
-<!-- For a complete list and description of processing instructions (PIs), 
-     please see http://xml.resource.org/authoring/README.html. -->
-<?rfc strict="yes" ?>
-<!-- give errors regarding ID-nits and DTD validation -->
-<!-- control the table of contents (ToC) -->
-<?rfc toc="yes"?>
-<!-- generate a ToC -->
-<?rfc tocdepth="3"?>
-<!-- the number of levels of subsections in ToC. default: 3 -->
-<!-- control references -->
-<?rfc symrefs="yes"?>
-<!-- use symbolic references tags, i.e, [RFC2119] instead of [1] -->
-<?rfc sortrefs="yes" ?>
-<!-- sort the reference entries alphabetically -->
-<!-- control vertical white space 
-     (using these PIs as follows is recommended by the RFC Editor) -->
-<?rfc compact="yes" ?>
-<!-- do not start each main section on a new page -->
-<?rfc subcompact="no" ?>
-<!-- keep one blank line between list items -->
-<!-- end of list of popular I-D processing instructions -->
-<rfc category="std" docName="draft-song-dlsr-srh-00" ipr="trust200902" consensus="true"> 
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-model href="rfc7991bis.rnc"?>  
+<!DOCTYPE rfc [
+  <!ENTITY nbsp    "&#160;">
+  <!ENTITY zwsp   "&#8203;">
+  <!ENTITY nbhy   "&#8209;">
+  <!ENTITY wj     "&#8288;">
+]>
+<rfc
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  category="std"
+  consensus="true"
+  docName="draft-song-dlsr-srh-00"
+  ipr="trust200902"
+  submissionType="IETF"
+  xml:lang="en"
+  version="3">
 
 <front>
     <title abbrev="DLSR SRH">IPv6 Domain Level Segment Routing using SRH</title>
@@ -34,11 +23,11 @@
       <organization>Futurewei Technologies</organization>
       <address>
         <postal>
-          <street></street>
+          <street>2330 Central Expressway</street>
           <city>Santa Clara</city>
           <region>CA</region>
-          <code></code>
-          <country>US</country>
+          <code>95050</code>
+          <country>USA</country>
         </postal>
         <email>haoyu.song@futurewei.com</email>
       </address>
@@ -48,17 +37,19 @@
       <organization>Futurewei Technologies</organization>
       <address>
         <postal>
-          <street></street>
-          <city></city>
-          <region></region>
-          <code></code>
-          <country>US</country>
+          <street>2330 Central Expressway</street>
+          <city>Santa Clara</city>
+          <region>CA</region>
+          <code>95050</code>
+          <country>USA</country>
         </postal>
-        <email>aretana.ietf@gmail.com</email>
+        <email>aretana@futurewei.com</email>
       </address>
     </author>
 
-  <area/>
+  <date year="2023"/>
+
+  <area>Routing</area>
   <workgroup>Internet Engineering Task Force</workgroup>
 
   <keyword>IPv6</keyword>
@@ -68,57 +59,41 @@
   <keyword>Source Routing</keyword>
 
   <abstract>
-    <t>We propose to make network domains as an explicit entity for packet forwarding, in order to better support 
-	   end-to-end quality of service, traffic privacy and security, domain-level policy, and cross-domain traffic engineering. 
-       In the context of IPv6, the Domain-Level Segment Routing (DLSR) can be considered as a special case of SRv6, in which
-	   each domain is virtualized as a single node and encoded as a Domain SID (DSID).
-       SRH is used to support DLSR, and DSIDs can be mixed with any other types of SIDs in an SRH.    
-	   DLSR allows each domain to hide its intra-domain routing/forwarding details and be managed and monitored as a whole.
-       The scheme is compatible with IPv6 and SRv6 architecture. </t>
+    <t>This document describes Domain-Level Segment Routing (DLSR). Each domain is virtualized as a single node and encoded as a Domain SID (DSID) in the existing Service Routing Header (SRH).</t>
+
+    <t>The domains involved belong to a single Segment Routing Domain, as defined in RFC 8402. DLSR can be used to better support end-to-end quality of service, traffic privacy and security, domain-level policy, and cross-domain traffic engineering.</t>
   </abstract>
-  
-  <note title="Requirements Language">
-           <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
-           "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
-           document are to be interpreted as described in <xref target="RFC2119">RFC 2119</xref>.</t>
-  </note>
 </front>
 
   <middle>
     <section anchor="Introduction" numbered="true" toc="default">
       <name>Introduction</name>
-      <t>
-	     The Internet is a network of networks, in which each basic network, known as an Autonomous Domain (AS), is independently operated by an Internet Service Provider (ISP). Although used by the inter-domain routing protocol Border Gateway Protocol (BGP), ASes are invisible in the forwarding plane, to both end-hosts and routers. At each router in the Internet, packet forwarding is based on a Forwarding Information Base (FIB), which only provides the next hop (i.e., a next immediate router towards the destination) information, without showing which domain the packet is from, in, and to. Such a flat forwarding architecture misses some opportunities to achieve certain high-level goals of forwarding.        
-	  </t>
-	  
-	  <t>
-		 The AS or domain (we will use domain interchangeably with the term AS hereafter) sets a clear boundary for responsibility. The service provider of a domain can make decision on peering agreements and various routing policies, and take charge of intra-domain routing and forwarding schemes. In the seven layers of networking model, domain can be naturally considered as a sub-layer located between Layer 3 (i.e., network layer) and Layer 4 (i.e., transport layer). In the past few years, it has been suggested to introduce the Layer 3.5 (L3.5) into the protocol stack as a means to de-ossify the Internet architecture by removing the IP protocol as the thin waist at L3. However, even without the ambitious goal, the introduction of the Layer 3.5 is still beneficial in the context of the IP networks. For example, the hierarchical layer separation may simplify the routing and forwarding; at the domain level, fewer entities need to be dealt with on a forwarding path and each entity happens to correspond to a single accountable operator; the new overlay can hide the underlay details so the intra-domain routing and forwarding can be kept as internal procedure for good reasons.    
-	  </t>
-      
-	  <t>
-	     The IP network is migrating to IPv6. IPv6 was designed to be extensible with the Extension Header (EH) mechanism <xref target="RFC8200"/>.
-         EH is conveniently located between the base IPv6 header (L3) and the transport protocol header (L4), suitable for a L3.5 header. A Routing Header (RH) is specified as an EH type. SRv6 <xref target="RFC8754"/> has taken advantage of it to support a flavor of node-level source routing on IPv6 data plane using an RH type named SRH. With great extensibility and programmability, SRv6 has shown potential in supporting new services, making the network intelligent and simplifying the network protocols. It is crucial to take advantage of its momentum and exploit its extensibility to make it even more powerful. 
-	  </t>
-	  
-	  <t>With the domain as the explicit L3.5 entity, we can take a simplified view of the Internet by considering each domain as 
-	     a virtual router (i.e., each domain is virtualized as a single node). The physical Domain Border Routers (DBRs) are considered as the virtual router interfaces, and all the other intra-domain routers of a domain resemble the switch fabric of the corresponding virtual router. 
-		 In this model, each virtual router can be identified by a domain ID (i.e., the AS number). A packet destined to a virtual router will be processed by an ingress DBR of the corresponding domain where local intra-domain policies can be applied (note that the local policy can be opaque to the controller outside of the domain). Each virtual router's performance is individually monitored and measured. Such an abstraction allows us to easily reuse the existing OAM protocols and tools, yet at the domain level instead of the physical router level. 
-	  </t>
-	  
-	  <t>Under such a model, it is easy to fit the domain-level routing and forwarding in the framework of SRv6 by deeming a domain as a segment endpoint. From the SRv6's perspective, a domain-level segment has no difference from a physical node-level segment.
-	  We only need to specify a new type of SID to encode the domain, and then we can 
-	  use it in SRH to support Domain-Level Segment Routing (DLSR). In this document, we describe the Domain SID (DSID) encoding, explain the DLSR processing and forwarding procedure with examples, and discuss the major use cases of DLSR. We show DLSR is fully compatible with IPv6 and SRv6 architecture. It introduces a new hierarchical structure and a new semantics to SRv6, and therefore enables new services. 
-	  </t>
+    <t>
+    This document describes Domain-Level Segment Routing (DLSR). Each domain is virtualized as a single node and encoded as a Domain SID (DSID) in the existing Service Routing Header (SRH) <xref target="RFC8457"/>.
+    </t>
+    <t>
+    The domains involved belong to a single Segment Routing Domain, as defined in <xref target="RFC8402"/>. DLSR can be used to better support end-to-end quality of service, traffic privacy and security, domain-level policy, and cross-domain traffic engineering.
+    </t>
+    <t>
+    DLSR is described in <xref target="DLSR"/>.  The DSID is specified in <xref target="dsidformat"/>.  Examples of use cases are presented in <xref target="usecase"/>.
+    </t>
 	  
       <section anchor="Terminology" numbered="true" toc="default">
         <name>Terminology</name>
 	
-        <t>The following acronyms are used in this document:</t>
-        <ul empty="true" spacing="normal">
-		  <li>DLSR - Domain-Level Source Routing</li>
-          <li>DSID - Domain Segment ID</li>
-        </ul>
+        <t>
+        This document uses the terminology defined in <xref target="RFC8402"/>, <xref target="RFC8754"/>, and <xref target="RFC8986"/>.
+        </t>
 	
+      </section>
+      <section anchor="requirements">
+        <name>Requirements Language</name>
+        <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL",
+          "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT
+          RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be
+          interpreted as described in BCP 14 <xref target="RFC2119"/>
+          <xref target="RFC8174"/> when, and only when, they appear in
+          all capitals, as shown here.</t>
       </section>
     </section>
  
@@ -132,16 +107,12 @@
 	  
 
      <t>
-	    The format of the DSID is shown in <xref target="fig:dsid"/>.
-		The prefix is globally assigned to indicate the SID type is of domain.
-		Following the prefix is 32-bit domain ID which is used to uniquely identify a domain. 
-		The domain ID can be set the same as the AS number. The remaining part is used to encode functions and arguments for network programming.  
-	 </t>
+	    The format of the DSID is shown in <xref target="figdsid"/>.
+     </t>
 
-
-     <figure anchor="fig:dsid">
+     <figure anchor="figdsid">
         <name>DSID Format</name>
-        <artwork align="center" name="fig:dsid" type="" alt=""><![CDATA[
+        <artwork align="center" name="figdsid" type="" alt=""><![CDATA[
 		
 0                                                              127		
 +-----------------+-------------------+-------------------------+
@@ -154,106 +125,141 @@
          ]]></artwork>
       </figure>
 
-
-	  <t>
-	  The locator part of the DSID is considered as an anycast address of the domain which is advertised externally by all the DBRs of the domain.
-	  Therefore, a packet destined to a domain-level segment (i.e., the destination IP address is a DSID) can reach the domain through one of its DBRs according to the routing computation result. 
-	  </t>
-	  
-	  <t>
-	  The remaining part of the DSID can be used to encode the QoS requirements or for other uses. The encoding of this part is out of the scope of this document.
-	  </t>
+     <t>
+     The locator (LOC) of the DSID is represented as B:N <xref target ="RFC8986"/>, where B (block/Prefix) is the IPv6 prefix allocated for DSIDs and N (node/Domain ID) is the identifier of the domain instantiating the SID. 
+     </t>
+     <t>
+     The use of a globally-assigned (to the SR domain) Prefix that indicates the SID type is DSID is RECOMMENDED. The Domain ID is a 32-bit number that uniquely identifies a domain. The Domain ID can be set to the autonomous system (AS) number <xref target="RFC6793"/>.
+     </t>
+     <t>
+     A DSID using a common locator should be advertised by all the domain border routers (DBR) of the domain identified by the Domain ID. The result is an anycast address to the domain. Therefore, a packet destined to a DSID (i.e., the destination IP address is the routing table is the locator) can reach the domain through one of its DBRs, according to the routing computation result. 
+     </t>
+     <t>
+     The remaining bits can be used to encode functions and arguments for network programming.  The definition and use of any such behaviors are outside the scope of this document.
+     </t>
       
 	  </section>
 	  
 	  <section anchor="srh">
-	  <name>SRH for DLSR</name>
+	  <name>Use of the Segment Routing Header (SRH)</name>
 	  
 	  <t>
-	     The SRH format for DLSR is identical to the standard format as specified in <xref target="RFC8754"/>.
-		 The segment list can have mixed DSIDs and other types of SIDs in arbitrary number and order.  
-		 An SRH can specify a pure domain-level path in the sense of either strict or loose source routing. 
-		 It is also possible to specify a path mixed with domains and physical nodes for extended flexibility. 
-		 However, since a DSID represents a domain, a few rules need to be observed when specifying a path to guarantee the correct semantics. 
-	  </t>
-	  
-	  <t><list style="symbols">
-	  <t>The DSID of a domain X is not routable within X. Therefore, the next segment endpoint of a physical node in X MUST not be the DSID of X. </t>
-
-      <t>The next segment endpoint of a domain-level segment endpoint should usually be located outside of the domain, because the entire domain is considered as a single endpoint.</t>	  
-	  
-	  <t>An exception to the above rule is that: the last segment endpoint (i.e., the final destination) can be within a domain-level segment endpoint. This is usually used for strict DLSR where the complete domain-level path is specified.</t>
-	  
-	  </list></t>
+    No changes are required to the SRH <xref target="RFC8754"/>. The segment list can contain only DSIDs to specify a domain-level path, loose or strict. It can also contain a mix of SIDs in any number or order.  
+    </t>
+    <t>
+    The DSID of Domain ID X MUST NOT be routable within that domain.  Therefore, an SR Node processing the SRv6 packet MUST drop it if the destination address (DA) would result from a DSID for the local Domain ID.
+    </t>
 	  
 	  </section>
 	  
       <section anchor="DLSRFWD">
 	  <name>DLSR Forwarding Examples</name>
 		
-	  
-	  <t>The path head end inserts the SRH to the packet. In the case of strict path DLSR, assume the domain-level path length is N (include the source domain and the destination domain), we set SL = N-1. We use an example shown in <xref target="fig:net" /> to describe the forwarding process for the strict path DLSR.
+	  <t>
+    In general, the SR Source Node <xref target="RFC8754"/> pushes an IPv6 header with its own SRH containing only a list of DSIDs or a mix with other SID types. <xref target="fignet"/> is the reference to describe the forwarding process using the abstract representation from <xref target="RFC8754"/>. The DSID for a Domain ID X is represented as ASX.  In <xref target="fignet"/>, all the nodes shown are DBRs and DLSR-capable.
 	  </t>
 
-	  <figure anchor="fig:net">
+	  <figure anchor="fignet">
         <name>DLSR Forwarding Example I</name>
-        <artwork align="center" name="fig:net" type="" alt=""><![CDATA[
+        <artwork align="center" name="fignet" type="" alt=""><![CDATA[
 
-        AS0            AS1                   AS2             AS5
-  +-------------+ +------------+        +------------+ +-------------+
-  | Host    DBR | | DBR    DBR |        | DBR    DBR | | DBR    Host |
-  | +---+   +-+ | | +-+    +-+ |        | +-+    +-+ | | +-+   +---+ |
-  | |Src|...|x+-+-+-+a|....|b+-+--------+-+d|....|e+-+-+-+y|...|Dst| |
-  | +---+   +-+ | | +-+    +++ |        | +-+    +-+ | | +-+   +---+ |
-  |             | |  : DBR  :  |        |  : DBR  :  | |  :      :   |
-  |             | |  : +-+  :  |        |  : +-+  :  | |  : +-+  :   |
-  |             | |  :.|c|..:  |        |  :.|k|..:  | |  :.|z|..:   |
-  |             | |    +++     |        |    +++     | |    +++      |
-  +-------------+ +-----+------+        +-----+------+ +-----+-------+
-                        |                     |              |
-                     +--+---------+ +---------+--+           |
-                     |  |         | |         |  |           |
-                     | +++    +-+ | | +-+    +++ |           |
-                     | |f|....|g+-+-+-+h|....|i+-+-----------+
-                     | +-+    +-+ | | +-+    +-+ |
-                     | DBR    DBR | | DBR    DBR |
-                     +------------+ +------------+
-                           AS3           AS4
+      AS64500        AS64501             AS64502        AS64505
+  +-------------+ +------------+      +------------+ +-------------+
+  | Host    DBR | | DBR    DBR |      | DBR    DBR | | DBR    Host |
+  | +---+   +-+ | | +-+    +-+ |      | +-+    +-+ | | +-+   +---+ |
+  | |Src|...|x+-+-+-+a|....|b+-+------+-+d|....|e+-+-+-+y|...|Dst| |
+  | +---+   +-+ | | +-+    +++ |      | +-+    +-+ | | +-+   +---+ |
+  |             | |  : DBR  :  |      |  :  DBR :  | |  : DBR  :   |
+  |             | |  : +-+  :  |      |  :  +-+ :  | |  : +-+  :   |
+  |             | |  :.|c|..:  |      |  :..|k|.:  | |  :.|z|..:   |
+  |             | |    +++     |      |     +++    | |    +++      |
+  +-------------+ +-----+------+      +------+-----+ +-----+-------+
+                        |                    |             |
+                     +--+---------+ +--------+--+          |
+                     |  |         | |        |  |          |
+                     | +++    +-+ | | +-+   +++ |          |
+                     | |f|....|g+-+-+-+h|...|i+-+----------+
+                     | +-+    +-+ | | +-+   +-+ |
+                     | DBR    DBR | | DBR   DBR |
+                     +------------+ +-----------+
+                        AS64503        AS64504
 		]]></artwork>
       </figure>
-		
-	  <t>Assume the source node Src in AS0 would send a packet to the destination node Dst in AS3 and it acquires 
-	  a strict DLSR path &lt;AS1, AS2, AS5&gt;. 
-	  The packet at Src is formatted as (Src, AS1)(Dst, AS5, AS2, AS1; SL=3). 
-	  The packet is forwarded to DBR 'a'. At 'a', the packet is updated to (Src, AS2)(Dst, AS5, AS2, AS1; SL=2), 
-	  and forwarded to 'd'.  At 'd', the packet is updated to (Src, AS5)(Dst, AS5, AS2, AS1; SL=1) 
-	  and forwarded to 'y'. At 'y', the packet is updated to (Src, Dst)(Dst, AS5, AS2, AS1; SL=0) 
-	  and forwarded to Dst. 
-	  </t>
-
-	  <t>The ingress DBR of a domain-level segment endpoint also processes the functions and parameters carried in the DSID, as well as the optional TLVs carried in the SRH. </t> 
-	  
-	  <t>In more general cases, domain-level segments can be mixed with node-level segments for more flexible forwarding. For example, in <xref target="fig:net" />, if a path &lt;AS3, e&gt; is configured for a packet from Src to Dst, the packet at Src is formatted as (Src, AS3)(Dst, e, AS3; SL=2) and forwarded to 'f'.  At 'f'. the packet is updated to (Src, e)(Dst, e, AS3; SL=1) and forwarded to 'e'. At 'e', the packet is updated to (Src, Dst)(Dst, e, AS3; SL=0) and forwarded to Dst. Note that if the Penultimate Hop Popping (PHP) behavior is preferred, Node 'e' can remove the SRH before forwarding the packet to Dst. </t>
-	  
+	 <t>
+   For example, host Src (in AS64500) sends a packet to host Dst (in AS64505) via an SR Policy &lt;AS64501, AS64502, AS64505&gt;, the packet is
+   </t>
+   <t>
+   P1: (ASrc,AS64501)(ADst, AS64505, AS64502, AS64501; SL=3)
+   </t>
+   <t>
+   Node x acts as transit node for packet P1 and forwards it towards AS64501.  In this case, there is only one DBR in AS64501 advertising the DSID (node a).
+   </t>
+   <t>
+   Node a receives packet P1 and, using the logic in <xref target="RFC8754"/>, sends packet
+   </t>
+   <t>
+   P2: (ASrc,AS64502)(ADst, AS64505, AS64502, AS64501; SL=2)
+   </t>
+   <t>
+   toward AS64502.  In this case, the internal metrics will determine the path toward DBR d, either through transit node b or transit nodes c and b.  Note that there wasn't a connection between AS64501 and AS64502, or DBR d didn't advertise the DSID (but DBR k did) then the packet would be forwarded through AS64503 and AS64504.
+   </t>
+   <t>
+   Node d receives packet P2 and, using the logic in <xref target="RFC8754"/>, sends packet
+   </t>
+   <t>
+   P3: (ASrc,AS64505)(ADst, AS64505, AS64502, AS64501; SL=1)
+   </t>
+   <t>
+   toward AS64505.  In this case, the internal metrics will determine the path toward DBR y, either through transit node e or transit nodes k and e.  Note that there wasn't a connection between AS64502 and AS64505, or DBR y didn't advertise the DSID (but DBR z did) then the packet would be forwarded through AS64504.
+   </t>
+   <t>
+   Node y receives packet P3 and, using the logic in <xref target="RFC8754"/>, sends packet
+   </t>
+   <t>
+   P4: (ASrc,ADst)(ADst, AS64505, AS64502, AS64501; SL=0)
+   </t>
+   <t>
+   on the interface toward Dst.
+   </t>
+   <t>
+   In another example, host Src sends a packet to host Dst via an SR Policy &lt;AS64503, Ae&gt;, the packet is
+   </t>
+   <t>
+   P5: (ASrc,AS64503)(ADst,Ae,A64503; SL=2)
+   </t>
+   <t>
+   Nodes x, a, and c act as transit nodes for packet P5 and forward it towards AS64503.
+   </t>
+   <t>
+   Node f receives packet P5 and, using the logic in <xref target="RFC8754"/>, sends packet
+   </t>
+   <t>
+   P6: (ASrc,Ae)(ADst,Ae,A64503; SL=1)
+   </t>
+   <t>
+   toward node e.  In this case, the shortest/best path to reach node e is through AS64504.  Nodes g, h, i, and k act as transit nodes for packet P6.
+   </t>
+   <t>
+   Node e receives packet P6 and, using the logic in <xref target="RFC8754"/>, sends packet
+   </t>
+   <t>
+   P7: (ASrc,ADst)(ADst,Ae,A64503; SL=0)
+   </t>
+   <t>
+   toward AS64505, where node Dst is located.
+   </t>
+   <t>
+   Note that if the Penultimate Segment Pop (PSP) behavior <xref target="RFC8986"/> is used, node e can remove the SRH before forwarding the packet to node Dst.
+   </t>
 	  </section>
  
  
-      <section anchor="DLSR SRH Compression" numbered="true" toc="default">
+      <section anchor="compression" numbered="true" toc="default">
         <name>DLSR SRH Compression</name>
 		<t>DLSR SIDs share the common prefix, and each has a 32-bit domain ID, so both NEXT-C-SID flavor and REPLACE-C-SID flavor as specified in <xref target="I-D.ietf-spring-srv6-srh-compression"/> can be supported to reduce the SRH overhead.
         </t>
    
-      </section>
-  
-   
-     <section anchor="compare" numbered="true" toc="default">
-	    <name>Domain-level Segment vs. Node-level Segment</name>
-        <t>To some extent, a domain-level segment is equivalent to two node-level segments (one for the domain ingress DBR and the other for the domain egress DBR). However, each domain only needs a globally unique SID to represent but it may have many ingress and egress DBRs. Using a domain-level segment is more compact than using two node-level segments, and support multihoming without exposing the domain topology and configuration. Moreover, a domain-level segment unambiguously defines the domain boundary (the node-level segment lacks such a feature) so the use cases discussed in <xref target="usecase" /> can be easily supported.</t>
-   		
-		<t>Although the DSID can also be used as a binding SID to bind some local policy as configured by the global controller, in practice, the intra-domain forwarding scheme and policy are preferred to be kept private and controlled locally. The domain-level segment makes such provision straightforward.</t>
-		
-     </section>
-	 
+      </section> 
    </section>
   
   <section anchor="usecase" numbered="true" toc="default">
@@ -307,13 +313,13 @@
   
     <section anchor="Security" numbered="true" toc="default">
       <name>Security Considerations</name>
-      
-      <t>DLSR shares all the security considerations for SRv6. In DLSR, one AS is considered a single node in the SR domain,
+      <t>
+      Considering that the intent of the DSID is to be used inside a single SR domain, the security considerations from <xref target="RFC8402"/>, <xref target="RFC8754"/>, and <xref target="RFC8986"/> apply.
+      </t>
+      <t>In DLSR, one AS is considered a single node in the SR domain,
          so the SR domain is beyond the control of any single AS. It is conceivable a higher level entity may be needed to oversee the 
          domain-level path provision, or stricter security and authentication measurements need to be applied to avoid any abuse or attack. </t>
       
-	  <t>IETF has assembled a team of expert to provide a solid security analysis of SRv6. The output is applicable to DLSR as well, and DLSR 
-	     also provides new perspective for analysis.</t>
     </section>
     
 	<section anchor="IANA" numbered="true" toc="default">
@@ -332,16 +338,18 @@
 <back>
     
       <references title="Normative References">
-	    <?rfc include='reference.RFC.2119'?> 	
-		<?rfc include='reference.RFC.8200'?>
-        <?rfc include='reference.RFC.8754'?> 
-		
-      </references>
-	  
-      <references title="Informative References">
-	    <?rfc include='reference.RFC.8300'?>
-	    <?rfc include='reference.I-D.ietf-spring-srv6-srh-compression'?>	
-		<?rfc include='reference.RFC.9197'?>
+	    <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"/>	
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8402.xml"/>
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8457.xml"/>
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8754.xml"/> 
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8986.xml"/>
+		  </references>
+	    <references title="Informative References">
+	    <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-spring-srv6-srh-compression.xml"/>
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.6793.xml"/>
+      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8300.xml"/>
+	    <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.9197.xml"/>
       </references>
     
   </back>
