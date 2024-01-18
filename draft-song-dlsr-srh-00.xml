@@ -59,7 +59,7 @@
   <keyword>Source Routing</keyword>
 
   <abstract>
-    <t>A network may contain multiple domains or ASes under the control or coordination of the same entity. This document describes the SRv6-based Domain-Level Segment Routing (DLSR). Each domain is virtualized as a single node and encoded as a Domain SID (DSID) in the existing Service Routing Header (SRH).</t>
+    <t>A network may contain multiple domains or ASes under the control or coordination of the same entity. This document describes the SRv6-based Domain-Level Segment Routing (DLSR). Each domain or AS is virtualized as a single node and encoded as a Domain SID (DSID) in the existing Service Routing Header (SRH).</t>
 
     <t>The domains involved belong to a single Segment Routing Domain, as defined in RFC 8402. DLSR can be used to better support end-to-end quality of service, traffic privacy and security, domain-level policy, and cross-domain traffic engineering.</t>
   </abstract>
@@ -69,7 +69,7 @@
     <section anchor="Introduction" numbered="true" toc="default">
       <name>Introduction</name>
     <t>
-    A network may contain multiple domains or ASes under the control or coordination of the same entity. This document describes Domain-Level Segment Routing (DLSR) for SRv6. Each domain is virtualized as a single node and encoded as a Domain SID (DSID) in the existing Service Routing Header (SRH) <xref target="RFC8457"/>.
+    A network may contain multiple domains or ASes under the control or coordination of the same entity. This document describes Domain-Level Segment Routing (DLSR) for SRv6. Each domain or AS is virtualized as a single node and encoded as a Domain SID (DSID) in the existing Service Routing Header (SRH) <xref target="RFC8457"/>.
     </t>
     <t>
     The domains involved belong to a single Segment Routing Domain, as defined in <xref target="RFC8402"/>. DLSR can be used to better support end-to-end quality of service, traffic privacy and security, domain-level policy, and cross-domain traffic engineering.
@@ -341,14 +341,14 @@
 	    <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
       <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"/>	
       <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8402.xml"/>
-      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8457.xml"/>
+	  <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8457.xml"/>
       <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8754.xml"/> 
       <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8986.xml"/>
 		  </references>
 	    <references title="Informative References">
 	    <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-spring-srv6-srh-compression.xml"/>
-      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.6793.xml"/>
-      <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8300.xml"/>
+		<xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.6793.xml"/>
+		<xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.8300.xml"/>
 	    <xi:include href="https://bib.ietf.org/public/rfc/bibxml/reference.RFC.9197.xml"/>
       </references>
     
