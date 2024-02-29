@@ -5,7 +5,7 @@
 Internet Engineering Task Force                                  H. Song
 Internet-Draft                                                 A. Retana
 Intended status: Standards Track                  Futurewei Technologies
-Expires: 21 July 2024                                    18 January 2024
+Expires: 1 September 2024                               29 February 2024
 
 
               IPv6 Domain Level Segment Routing using SRH
@@ -39,7 +39,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 21 July 2024.
+   This Internet-Draft will expire on 1 September 2024.
 
 Copyright Notice
 
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Song & Retana             Expires 21 July 2024                  [Page 1]
+Song & Retana           Expires 1 September 2024                [Page 1]
 
-Internet-Draft                  DLSR SRH                    January 2024
+Internet-Draft                  DLSR SRH                   February 2024
 
 
    and restrictions with respect to this document.  Code Components
@@ -76,10 +76,10 @@ Table of Contents
    3.  Use Cases . . . . . . . . . . . . . . . . . . . . . . . . . .   6
      3.1.  End-to-End Cross-Domain QoS . . . . . . . . . . . . . . .   6
      3.2.  Traffic Security and Privacy  . . . . . . . . . . . . . .   7
-     3.3.  Domain Level Routing Policy . . . . . . . . . . . . . . .   7
-     3.4.  Domain Level Traffic Engineering  . . . . . . . . . . . .   7
-     3.5.  Service Function Chaining (SFC) . . . . . . . . . . . . .   7
-     3.6.  Path Validation . . . . . . . . . . . . . . . . . . . . .   7
+     3.3.  Trusted Routing with Path Verification  . . . . . . . . .   7
+     3.4.  Domain Level Routing Policy . . . . . . . . . . . . . . .   7
+     3.5.  Domain Level Traffic Engineering  . . . . . . . . . . . .   7
+     3.6.  Service Function Chaining (SFC) . . . . . . . . . . . . .   7
      3.7.  Hierarchical Segment Routing  . . . . . . . . . . . . . .   8
    4.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
    5.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   8
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Song & Retana             Expires 21 July 2024                  [Page 2]
+Song & Retana           Expires 1 September 2024                [Page 2]
 
-Internet-Draft                  DLSR SRH                    January 2024
+Internet-Draft                  DLSR SRH                   February 2024
 
 
 1.1.  Terminology
@@ -165,9 +165,9 @@ Internet-Draft                  DLSR SRH                    January 2024
 
 
 
-Song & Retana             Expires 21 July 2024                  [Page 3]
+Song & Retana           Expires 1 September 2024                [Page 3]
 
-Internet-Draft                  DLSR SRH                    January 2024
+Internet-Draft                  DLSR SRH                   February 2024
 
 
    The remaining bits can be used to encode functions and arguments for
@@ -221,9 +221,9 @@ Internet-Draft                  DLSR SRH                    January 2024
 
 
 
-Song & Retana             Expires 21 July 2024                  [Page 4]
+Song & Retana           Expires 1 September 2024                [Page 4]
 
-Internet-Draft                  DLSR SRH                    January 2024
+Internet-Draft                  DLSR SRH                   February 2024
 
 
    For example, host Src (in AS64500) sends a packet to host Dst (in
@@ -277,9 +277,9 @@ Internet-Draft                  DLSR SRH                    January 2024
 
 
 
-Song & Retana             Expires 21 July 2024                  [Page 5]
+Song & Retana           Expires 1 September 2024                [Page 5]
 
-Internet-Draft                  DLSR SRH                    January 2024
+Internet-Draft                  DLSR SRH                   February 2024
 
 
    P6: (ASrc,Ae)(ADst,Ae,A64503; SL=1)
@@ -333,9 +333,9 @@ Internet-Draft                  DLSR SRH                    January 2024
 
 
 
-Song & Retana             Expires 21 July 2024                  [Page 6]
+Song & Retana           Expires 1 September 2024                [Page 6]
 
-Internet-Draft                  DLSR SRH                    January 2024
+Internet-Draft                  DLSR SRH                   February 2024
 
 
 3.2.  Traffic Security and Privacy
@@ -348,20 +348,34 @@ Internet-Draft                  DLSR SRH                    January 2024
    reasons.  One can also guide traffic to certain domains for special
    treatments such as security screening and lawful interception.
 
-3.3.  Domain Level Routing Policy
+3.3.  Trusted Routing with Path Verification
+
+   DLSR provides a right level of routing information exposure in
+   packets.  It hides the intra-domain routing and forwarding details to
+   preserve privacy.  Meanwhile, it keeps the record of the domain-level
+   path which can be used for efficient path verification.  This is
+   sufficient because for inter-domain routing, the domain-level path
+   provide enough information for packet's path verification; this is
+   also simper and more economic because much fewer entities than the
+   per-hop routers need to be verified.  Each domain segment endpoint
+   can participate in the path verification as configured by the
+   controller.  Various verification algorithms and protocols can be
+   used (e.g., IOAM POT [RFC9197]).
+
+3.4.  Domain Level Routing Policy
 
    With a domain-level path, we can directly express the peering and
    routing preferences at data plane.  Domain-level routing policies are
    easy to be specified.  For example, we can pin certain traffic to a
    specific domain where one of the anycast destinations is located.
 
-3.4.  Domain Level Traffic Engineering
+3.5.  Domain Level Traffic Engineering
 
    One can provision multiple domain-level paths with the same of
    different service level.  Path choosing or load balancing can be
    applied on these paths to achieve the ideal performance.
 
-3.5.  Service Function Chaining (SFC)
+3.6.  Service Function Chaining (SFC)
 
    Domain level source routing allows service providers to collaborate
    on providing distributed network services.  SFC is a general
@@ -372,27 +386,16 @@ Internet-Draft                  DLSR SRH                    January 2024
    to negotiate a plan to allocate different network functions in
    different domains.  The service providers are compensated by the
    nature of the functions and the contribution of each participating
+
+
+
+Song & Retana           Expires 1 September 2024                [Page 7]
+
+Internet-Draft                  DLSR SRH                   February 2024
+
+
    domain.  The SFC descriptor (e.g., NSH [RFC8300]) can be carried as a
    SRH option.
-
-3.6.  Path Validation
-
-   DLSR provides a natural way to support path validation at the domain
-   level.  The path information is kept in the SRH and can be verified
-   at each segment endpoint.  Various verification algorithms and
-   protocols can be used (e.g., IOAM POT [RFC9197]).
-
-
-
-
-
-
-
-
-Song & Retana             Expires 21 July 2024                  [Page 7]
-
-Internet-Draft                  DLSR SRH                    January 2024
-
 
 3.7.  Hierarchical Segment Routing
 
@@ -442,12 +445,9 @@ Internet-Draft                  DLSR SRH                    January 2024
 
 
 
-
-
-
-Song & Retana             Expires 21 July 2024                  [Page 8]
+Song & Retana           Expires 1 September 2024                [Page 8]
 
-Internet-Draft                  DLSR SRH                    January 2024
+Internet-Draft                  DLSR SRH                   February 2024
 
 
    [RFC8457]  Leiba, B., Ed., "IMAP "$Important" Keyword and
@@ -472,9 +472,9 @@ Internet-Draft                  DLSR SRH                    January 2024
               Cheng, W., Filsfils, C., Li, Z., Decraene, B., and F.
               Clad, "Compressed SRv6 Segment List Encoding", Work in
               Progress, Internet-Draft, draft-ietf-spring-srv6-srh-
-              compression-11, 18 January 2024,
+              compression-12, 14 February 2024,
               <https://datatracker.ietf.org/doc/html/draft-ietf-spring-
-              srv6-srh-compression-11>.
+              srv6-srh-compression-12>.
 
    [RFC6793]  Vohra, Q. and E. Chen, "BGP Support for Four-Octet
               Autonomous System (AS) Number Space", RFC 6793,
@@ -501,9 +501,9 @@ Authors' Addresses
 
 
 
-Song & Retana             Expires 21 July 2024                  [Page 9]
+Song & Retana           Expires 1 September 2024                [Page 9]
 
-Internet-Draft                  DLSR SRH                    January 2024
+Internet-Draft                  DLSR SRH                   February 2024
 
 
    Email: haoyu.song@futurewei.com
@@ -557,4 +557,4 @@ Internet-Draft                  DLSR SRH                    January 2024
 
 
 
-Song & Retana             Expires 21 July 2024                 [Page 10]
+Song & Retana           Expires 1 September 2024               [Page 10]
