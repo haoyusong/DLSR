@@ -279,6 +279,10 @@
 		<t>For various business or legal reasons, certain customer traffic must be retained within specific domains. On the other hand, due to disaster, outrage, and other political reasons, certain customer traffic must avoid specific domains. By specifying a domain-level path, one can avoid or include domains for any security and privacy reasons. One can also guide traffic to certain domains for special treatments such as security screening and lawful interception.</t>
 	  </section>
 	  
+	  <section anchor="pv" numbered="true" toc="default">
+	    <name>Trusted Routing with Path Verification</name>
+	    <t>DLSR provides a right level of routing information exposure in packets. It hides the intra-domain routing and forwarding details to preserve privacy. Meanwhile, it keeps the record of the domain-level path which can be used for efficient path verification. This is sufficient because for inter-domain routing, the domain-level path provide enough information for packet's path verification; this is also simper and more economic because much fewer entities than the per-hop routers need to be verified. Each domain segment endpoint can participate in the path verification as configured by the controller. Various verification algorithms and protocols can be used (e.g., <xref target="RFC9197">IOAM POT</xref>).</t>
+	  </section>
 	  
 	  <section anchor="policy" numbered="true" toc="default">
 	    <name>Domain Level Routing Policy</name>
@@ -296,11 +300,6 @@
 	  <section anchor="sfc" numbered="true" toc="default">
 	    <name>Service Function Chaining (SFC)</name>
 	    <t>Domain level source routing allows service providers to collaborate on providing distributed network services. SFC is a general technique to initiate an ordered set of service functions (e.g., firewall, load balancing, WAN optimization, NAT, and encryption) in network and steer the user traffic through it. Traditionally it can only be used by a single service provider. With DLSR, it is easier to negotiate a plan to allocate different network functions in different domains. The service providers are compensated by the nature of the functions and the contribution of each participating domain. The SFC descriptor (e.g., <xref target="RFC8300">NSH</xref>) can be carried as a SRH option.</t>
-	  </section>
-	  
-	  <section anchor="pv" numbered="true" toc="default">
-	    <name>Path Validation</name>
-	    <t>DLSR provides a natural way to support path validation at the domain level. The path information is kept in the SRH and can be verified at each segment endpoint. Various verification algorithms and protocols can be used (e.g., <xref target="RFC9197">IOAM POT</xref>).</t>
 	  </section>
 	  
 	  <section anchor="hs" numbered="true" toc="default">
